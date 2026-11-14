@@ -38,7 +38,8 @@ export async function GET(req: Request) {
   // Quick trades (and first run before any nightly job): compute live from the provider.
   const ck = `${market}:${mode}`; const hit = cache.get(ck);
   if (hit && Date.now() - hit.at < (mode === 'quick' ? 60_000 : 15 * 60_000)) return NextResponse.json(hit.body);
-  if (market === 'GLOBAL' && mode !== 'invest') return NextResponse.json({ market, mode, asOf: null, live: true, allowLevels, rows: [], note: 'Global intraday scans need a paid data plan; Global runs in the nightly investment scan.' });
+  // Twelve Data's free plan allows 8 calls a minute, so a live Global scan would take ~3 minutes: Global only reads the nightly scan.
+  if (market === 'GLOBAL') return NextResponse.json({ market, mode, asOf: null, live: false, allowLevels, rows: [], note: mode === 'invest' ? 'Global results come from the nightly scan. Run: node --env-file=.env.local --import tsx scripts/ingest.ts GLOBAL (about 4 minutes), or wait for the nightly job.' : 'Global day and quick trades need a paid data plan; Global is covered by the nightly investment scan.' });
   if (!providerConfigured(market)) return NextResponse.json({ market, mode, asOf: null, live: true, allowLevels, rows: [], note: 'Add this market’s data provider key to run the screener.' });
   const { rows } = await runMarket(market, { intraday: mode === 'quick' });
   const out: Row[] = rows.map((r) => ({ symbol: r.symbol, name: r.name, sector: r.sector, composite: r.score.composite, bias: r.score.bias, factors: r.score.factors, trends: r.tech.trends, setup: strip((r.setups[mode] as unknown as Record<string, unknown>) ?? null) }));

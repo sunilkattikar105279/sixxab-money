@@ -35,7 +35,9 @@ export function ScreenerView() {
 
   useEffect(() => {
     let off = false; setBusy(true); setData(null);
-    fetch(`/api/screener?market=${market}&mode=${mode}`).then((r) => r.json()).then((j) => { if (!off) setData(j); }).finally(() => !off && setBusy(false));
+    fetch(`/api/screener?market=${market}&mode=${mode}`, { signal: AbortSignal.timeout(60_000) }).then((r) => r.json()).then((j) => { if (!off) setData(j); })
+      .catch(() => { if (!off) setData({ asOf: null, live: true, allowLevels: true, rows: [], note: 'The scan took too long. Try again, or run the nightly scan script to save results.' }); })
+      .finally(() => !off && setBusy(false));
     return () => { off = true; };
   }, [market, mode]);
 
