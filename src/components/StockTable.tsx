@@ -10,8 +10,8 @@ export function StockTable({ board, currency }: { board: StockBoard; currency: '
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, marginBottom: 8 }}>
         <h2>Stocks</h2><span className="dim" style={{ fontSize: 12 }}>Sorted by 1-day change</span>
       </div>
-      <div className="scroll" style={{ maxHeight: 560, overflowY: 'auto' }}>
-        <table>
+      <div className="scroll" style={{ maxHeight: 380, overflowY: 'auto' }}>
+        <table className="compact">
           <thead><tr><th>Ticker</th><th>Company</th><th>Industry</th><th style={{ textAlign: 'right' }}>Last</th><th style={{ textAlign: 'right' }}>Change</th></tr></thead>
           <tbody>
             {rows.map((r) => (
@@ -20,7 +20,7 @@ export function StockTable({ board, currency }: { board: StockBoard; currency: '
                 <td>{r.name}</td>
                 <td className="muted">{r.sector}</td>
                 <td className="mono" style={{ textAlign: 'right' }}>{money(r.price)}</td>
-                <td className={`mono ${r.changePct === null ? 'dim' : r.changePct >= 0 ? 'teal' : 'red'}`} style={{ textAlign: 'right', fontWeight: 600 }}>{fmtPct(r.changePct)}</td>
+                <td className={`mono ${r.changePct === null ? 'dim' : r.changePct >= 0 ? 'green' : 'red'}`} style={{ textAlign: 'right', fontWeight: 600 }}>{fmtPct(r.changePct)}</td>
               </tr>
             ))}
           </tbody>

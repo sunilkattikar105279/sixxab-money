@@ -1,0 +1,31 @@
+name: Nightly market ingest
+on:
+  schedule:
+    - cron: '30 21 * * 1-5'   # 21:30 UTC, after the US close
+    - cron: '30 10 * * 1-5'   # 10:30 UTC, after the India close
+  workflow_dispatch:
+    inputs:
+      market: { description: 'US, IN or GLOBAL', required: true, default: 'US' }
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      ALPACA_KEY_ID: ${{ secrets.ALPACA_KEY_ID }}
+      ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+      UPSTOX_ACCESS_TOKEN: ${{ secrets.UPSTOX_ACCESS_TOKEN }}
+      TWELVEDATA_API_KEY: ${{ secrets.TWELVEDATA_API_KEY }}
+      FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
+      SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm install --no-audit --no-fund
+      - name: Run
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then M="${{ github.event.inputs.market }}";
+          elif [ "${{ github.event.schedule }}" = "30 10 * * 1-5" ]; then M="IN"; else M="US"; fi
+          npx tsx scripts/ingest.ts "$M"
+          if [ "$M" = "US" ]; then npx tsx scripts/ingest.ts GLOBAL; fi

@@ -48,7 +48,7 @@ export const UNIVERSE: Record<Market, Listing[]> = {
     { symbol: 'TITAN', name: 'Titan', sector: 'Consumer' },
     { symbol: 'MARUTI', name: 'Maruti Suzuki', sector: 'Auto' },
     { symbol: 'M&M', name: 'Mahindra & Mahindra', sector: 'Auto' },
-    { symbol: 'TATAMOTORS', name: 'Tata Motors', sector: 'Auto' },
+    { symbol: 'BAJAJ-AUTO', name: 'Bajaj Auto', sector: 'Auto' },
     { symbol: 'BHARTIARTL', name: 'Bharti Airtel', sector: 'Telecom' },
     { symbol: 'LT', name: 'Larsen & Toubro', sector: 'Industrials' },
     { symbol: 'SUNPHARMA', name: 'Sun Pharma', sector: 'Healthcare' },

@@ -43,7 +43,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ m
             <article key={q.name} className="card" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}><h2>{q.name}</h2><span className="mono dim" style={{ fontSize: 12 }}>{snap.asOf || '—'}</span></div>
               <div className="big">{fmt(q.value)}</div>
-              <div className={`mono ${q.change === null ? 'dim' : q.change >= 0 ? 'teal' : 'red'}`} style={{ fontWeight: 600 }}>
+              <div className={`mono ${q.change === null ? 'dim' : q.change >= 0 ? 'green' : 'red'}`} style={{ fontWeight: 600 }}>
                 {q.change === null ? 'awaiting feed' : `${sign(q.change)}${fmt(Math.abs(q.change))} (${sign(q.changePct)}${fmt(Math.abs(q.changePct ?? 0))}%)`}
               </div>
               {q.why && <p className="muted" style={{ margin: 0, fontSize: 13 }}>{q.why}</p>}

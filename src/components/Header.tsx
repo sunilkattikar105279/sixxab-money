@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 const TABS = [
-  ['Home', '/'], ['Economy', '/economy'], ['World & Policy', '/world'], ['My Money', '/my-money'], ['Learn', '/learn'], ['Levels', '/levels'],
+  ['Home', '/'], ['Screener', '/screener'], ['Economy', '/economy'], ['World & Policy', '/world'], ['My Money', '/my-money'], ['Learn', '/learn'], ['Levels', '/levels'],
 ] as const;
 
 export function Header({ active, market }: { active: string; market?: 'US' | 'IN' | 'GLOBAL' }) {

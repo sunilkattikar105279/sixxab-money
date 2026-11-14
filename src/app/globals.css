@@ -1,6 +1,6 @@
 :root {
   --bg: #081425; --panel: #0B1B33; --panel2: #0F2342; --line: #1C2E4A; --line2: #22385A;
-  --text: #E6EDF6; --muted: #A9B8CC; --dim: #8FA3BF; --teal: #4FD1B8; --gold: #D4A84B; --red: #F2836B;
+  --text: #E6EDF6; --muted: #A9B8CC; --dim: #8FA3BF; --teal: #4FD1B8; --gold: #D4A84B; --red: #FF6B6B; --green: #3EE09A;
   --mono: 'IBM Plex Mono', ui-monospace, monospace; --head: 'Space Grotesk', Inter, sans-serif;
 }
 * { box-sizing: border-box; }
@@ -26,7 +26,7 @@ main.wrap { padding-top: 20px; padding-bottom: 40px; display: flex; flex-directi
 .inset { background: var(--panel2); border-radius: 10px; padding: 12px; }
 .bar { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; background: var(--panel2); border: 1px solid var(--line2); border-radius: 12px; padding: 14px 18px; }
 .tag { font: 600 11px var(--mono); letter-spacing: 1px; text-transform: uppercase; }
-.teal { color: var(--teal); } .gold { color: var(--gold); } .red { color: var(--red); } .muted { color: var(--muted); } .dim { color: var(--dim); }
+.teal { color: var(--teal); } .green { color: var(--green); } .gold { color: var(--gold); } .red { color: var(--red); } .muted { color: var(--muted); } .dim { color: var(--dim); }
 .mono { font-family: var(--mono); }
 .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
 .cols { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
@@ -45,3 +45,7 @@ table { width: 100%; border-collapse: collapse; font-size: 13px; } th { text-ali
 input, textarea { font: inherit; color: var(--text); background: var(--panel2); border: 1px solid var(--line2); border-radius: 10px; padding: 10px 12px; min-height: 44px; width: 100%; }
 .foot { border-top: 1px solid var(--line); padding-top: 14px; display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; font-size: 12px; color: var(--dim); }
 .sr { position: absolute; left: -9999px; }
+
+table.compact td { padding: 6px 6px; } table.compact th { padding: 6px 6px; position: sticky; top: 0; background: var(--panel); }
+.chip { display: inline-block; padding: 2px 8px; border-radius: 10px; font: 600 11px var(--mono); }
+.up { background: rgba(15,169,104,.18); color: #3EE09A; } .down { background: rgba(224,45,45,.18); color: #FF7A7A; } .flat { background: var(--line); color: var(--muted); }
