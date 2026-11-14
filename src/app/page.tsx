@@ -9,6 +9,10 @@ import { StockTable } from '@/components/StockTable';
 import { VideoRail } from '@/components/VideoRail';
 import { StageIcon } from '@/components/StageIcon';
 import { videos } from '@/lib/media';
+import { getBreadth } from '@/lib/data/breadth';
+import { Breadth } from '@/components/Breadth';
+import { TopMovers } from '@/components/TopMovers';
+import { policyBriefs } from '@/lib/data/policy';
 
 export const revalidate = 300;
 
@@ -26,6 +30,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ m
   const { m } = await searchParams;
   const market: Market = m === 'IN' || m === 'GLOBAL' ? m : 'US';
   const [snap, brief, board, briefs] = await Promise.all([getSnapshot(market), market === 'US' ? latestBrief() : Promise.resolve(null), getStocks(market), videos({ topic: 'daily-brief', limit: 4 })]);
+  const [breadth, briefsList] = await Promise.all([getBreadth(market, board), policyBriefs(undefined, 3)]);
   const mapTitle = market === 'US' ? 'US industry map' : market === 'IN' ? 'India industry map (NSE)' : 'Global industry map';
   const fallbackBrief = market === 'US' && snap.sample
     ? 'Chip stocks pulled the Nasdaq down 0.9% after Nvidia’s CEO exit, while the Dow edged up. More stocks fell than rose.'
@@ -54,6 +59,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ m
           ))}
         </section>
 
+        <Breadth bars={breadth} />
+
         <IndustryMap board={board} title={mapTitle} />
 
         <VideoRail title="Watch the daily brief" items={briefs} note="Built by the SIXXAB Money agent each weekday" />
@@ -70,10 +77,15 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ m
                   <li key={s.key}><StageIcon n={s.n} /><div className="tag gold">Stage {s.n}</div><div style={{ font: '700 15px var(--head)', color: '#fff', margin: '4px 0' }}>{s.name}</div><div className="muted" style={{ fontSize: 12 }}>{s.focus}</div></li>
                 ))}
               </ol>
-              <div style={{ marginTop: 14 }}><Link href="/my-money" className="btn btn-line">Find my stage</Link></div>
+              <div style={{ marginTop: 14, display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}><span className="muted">Your coach checks in each month and moves you up when both gates hold for three months.</span><Link href="/my-money" className="btn btn-line" style={{ marginLeft: 'auto' }}>Find my stage</Link></div>
             </section>
           </div>
           <aside className="side">
+            <TopMovers board={board} />
+            <section className="card" style={{ display: 'flex', flexDirection: 'column', gap: 10 }} aria-label="World and policy">
+              <h2>World &amp; policy</h2>
+              {briefsList.map((b) => <Link key={b.id} href="/world" className="inset" style={{ display: 'block', color: 'var(--text)' }}><div className="tag gold">{b.tag}</div><div style={{ fontWeight: 600, margin: '4px 0' }}>{b.title}</div><div className="muted" style={{ fontSize: 12 }}>{b.money.slice(0, 110)}{b.money.length > 110 ? '…' : ''}</div></Link>)}
+            </section>
             <section className="card" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <h2>Where the numbers come from</h2>
               <p className="muted" style={{ margin: 0 }}>Source: {snap.source}{snap.sample ? ' (sample until the licensed feed is connected)' : ''}.</p>

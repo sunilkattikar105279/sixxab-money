@@ -6,6 +6,16 @@ export const INDICATORS: Record<string, { seriesId: string; label: string; units
   ten_year: { seriesId: 'DGS10', label: '10-year Treasury yield', units: '%' },
   mortgage_30y: { seriesId: 'MORTGAGE30US', label: '30-year mortgage rate', units: '%' },
   gdp_growth: { seriesId: 'A191RL1Q225SBEA', label: 'Real GDP growth (annualised)', units: '%' },
+  // India and global series that FRED carries
+  usd_inr: { seriesId: 'DEXINUS', label: 'USD/INR', units: '₹ per $' },
+  brent: { seriesId: 'DCOILBRENTEU', label: 'Brent crude', units: '$ per barrel' },
+  dollar_index: { seriesId: 'DTWEXBGS', label: 'Broad US dollar index', units: 'index' },
+};
+
+export const GROUPS: Record<'US' | 'IN' | 'GLOBAL', string[]> = {
+  US: ['fed_funds', 'cpi', 'unemployment', 'ten_year', 'mortgage_30y', 'gdp_growth'],
+  IN: ['usd_inr'],
+  GLOBAL: ['brent', 'dollar_index', 'usd_inr'],
 };
 
 export interface IndicatorValue { key: string; seriesId: string; label: string; units: string; value: number; date: string }

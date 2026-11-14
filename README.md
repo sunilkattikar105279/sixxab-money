@@ -62,3 +62,11 @@ Without Supabase or Claude keys the portal still runs in demo mode: US cards sho
 - **Nightly job**: `.github/workflows/ingest.yml` runs `npx tsx scripts/ingest.ts US|IN|GLOBAL` after each close and fills the home map, analysis and setups. Add the keys above as GitHub repository secrets, plus `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`.
 - **Compliance**: India entry/stop/target levels stay hidden until `SIXXAB_SEBI_RA=true` (SEBI research-analyst registration). `SIXXAB_PERSONAL_MODE=true` shows them on a private, single-user install. Free data tiers are mostly for personal or development use; a public launch needs paid data licences.
 - Run `supabase/migrations/0002_stock_quotes.sql` and `0003_analysis.sql` in Supabase.
+
+## Portal features mapped from the prototype (Nov 14, 2026)
+- Home: agent brief, index cards, breadth bars (advancing/declining, 52-week highs/lows, above 50/200-day), industry map, daily-brief reels, stocks table, top movers, world & policy cards, SIXXAB journey with stage illustrations.
+- Economy: US / India / Global switch (FRED series incl. USD/INR, Brent, dollar index), calendar (`econ_events`), "what it means for your money", economy reels.
+- World & Policy: topic filters, featured brief (facts, both views, money), Nvidia story reel, tracker, country lens.
+- My Money: stage gates, tickable 90-day plan (saved), budget split, stage videos, mood check-in, coach, family, linked accounts.
+- `/status` checks every connection; `/login` and `/onboarding` create the member profile.
+- Run `supabase/migrations/0004_videos.sql` and `0005_econ_events.sql`.

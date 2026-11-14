@@ -1,5 +1,5 @@
 import { resample, type Bar } from './bars';
-import { atr, cmf, adLine, obv, rvol, slopePct, vwap } from './indicators';
+import { atr, cmf, adLine, obv, rvol, slopePct, vwap, sma } from './indicators';
 import { breaks, trend, zones, type Breaks, type Trend, type Zone } from './structure';
 import { wyckoff, type PhaseRead } from './wyckoff';
 import { elliott, type WaveRead } from './elliott';
@@ -15,6 +15,7 @@ export interface TechReport {
   volume: { cmf20: number; rvolD: number; obvSlope: number; adSlope: number };
   cycle: { weekly: PhaseRead; daily: PhaseRead };
   waves: WaveRead;
+  breadth: { aboveSma50: boolean | null; aboveSma200: boolean | null; newHigh52: boolean; newLow52: boolean };
   intraday?: { vwap: number; rvol15: number; rvol5: number; m1Break: Breaks; m5Breaks: Breaks; m15: Trend };
 }
 
@@ -54,6 +55,17 @@ export function analyze(symbol: string, daily: Bar[], hourly: Bar[] = [], minute
     volume: { cmf20: cmf(daily, 20), rvolD: rvol(daily, 20), obvSlope: slopePct(obv(daily).map((v) => v + 1e12), 20), adSlope: slopePct(adLine(daily).map((v) => v + 1e12), 20) },
     cycle: { weekly: wyckoff(w), daily: wyckoff(daily) },
     waves: elliott(daily, 6),
+    breadth: (() => {
+      const closes = daily.map((b) => b.c);
+      const s50 = sma(closes, 50).at(-1), s200 = sma(closes, 200).at(-1);
+      const yr = daily.slice(-252, -1);
+      return {
+        aboveSma50: s50 === undefined || Number.isNaN(s50) ? null : last.c > s50,
+        aboveSma200: s200 === undefined || Number.isNaN(s200) ? null : last.c > s200,
+        newHigh52: yr.length > 50 && last.h >= Math.max(...yr.map((b) => b.h)),
+        newLow52: yr.length > 50 && last.l <= Math.min(...yr.map((b) => b.l)),
+      };
+    })(),
   };
   if (minute.length) {
     report.intraday = { vwap: vwap(minute), rvol15: rvol(m15, 20), rvol5: rvol(m5, 20), m1Break: breaks(minute, 3), m5Breaks: breaks(m5, 3), m15: trend(m15) };
