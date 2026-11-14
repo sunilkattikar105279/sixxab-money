@@ -1,4 +1,4 @@
-import { createServerClient } from '@supabase/ssr';
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
 /** Per-request client acting as the signed-in member (row-level security applies). */
@@ -10,7 +10,7 @@ export async function memberClient() {
   return createServerClient(url, anon, {
     cookies: {
       getAll: () => store.getAll(),
-      setAll: (list) => {
+      setAll: (list: { name: string; value: string; options: CookieOptions }[]) => {
         try { list.forEach(({ name, value, options }) => store.set(name, value, options)); } catch { /* called from a server component */ }
       },
     },
