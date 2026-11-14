@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { Header, Footer } from '@/components/Header';
 import { AgentAsk } from '@/components/AgentAsk';
 import { MoodCheckin } from '@/components/MoodCheckin';
