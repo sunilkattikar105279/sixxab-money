@@ -1,0 +1,17 @@
+{
+  "name": "SIXXAB Money: daily brief and market snapshot",
+  "nodes": [
+    { "parameters": { "rule": { "interval": [{ "field": "cronExpression", "expression": "30 7 * * 1-5" }] } }, "name": "Weekdays 7:30 AM CST", "type": "n8n-nodes-base.scheduleTrigger", "typeVersion": 1.2, "position": [0, 0] },
+    { "parameters": { "url": "={{$env.MARKET_VENDOR_URL}}", "options": {} }, "name": "Fetch close from licensed vendor", "type": "n8n-nodes-base.httpRequest", "typeVersion": 4.2, "position": [240, 0] },
+    { "parameters": { "jsCode": "// Map the vendor's response to the SIXXAB snapshot shape\nconst d = $json;\nreturn [{ json: { market: 'US', asOf: d.asOf, source: d.source, indices: d.indices } }];" }, "name": "Map to snapshot", "type": "n8n-nodes-base.code", "typeVersion": 2, "position": [480, 0] },
+    { "parameters": { "method": "POST", "url": "={{$env.SIXXAB_BASE_URL}}/api/market", "sendHeaders": true, "headerParameters": { "parameters": [{ "name": "Authorization", "value": "=Bearer {{$env.SIXXAB_CRON_SECRET}}" }] }, "sendBody": true, "specifyBody": "json", "jsonBody": "={{ JSON.stringify($json) }}" }, "name": "Store snapshot", "type": "n8n-nodes-base.httpRequest", "typeVersion": 4.2, "position": [720, 0] },
+    { "parameters": { "method": "POST", "url": "={{$env.SIXXAB_BASE_URL}}/api/brief", "sendHeaders": true, "headerParameters": { "parameters": [{ "name": "Authorization", "value": "=Bearer {{$env.SIXXAB_CRON_SECRET}}" }] } }, "name": "Write agent brief", "type": "n8n-nodes-base.httpRequest", "typeVersion": 4.2, "position": [960, 0] }
+  ],
+  "connections": {
+    "Weekdays 7:30 AM CST": { "main": [[{ "node": "Fetch close from licensed vendor", "type": "main", "index": 0 }]] },
+    "Fetch close from licensed vendor": { "main": [[{ "node": "Map to snapshot", "type": "main", "index": 0 }]] },
+    "Map to snapshot": { "main": [[{ "node": "Store snapshot", "type": "main", "index": 0 }]] },
+    "Store snapshot": { "main": [[{ "node": "Write agent brief", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "timezone": "America/Chicago" }
+}
