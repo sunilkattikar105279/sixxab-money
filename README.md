@@ -44,3 +44,21 @@ Without Supabase or Claude keys the portal still runs in demo mode: US cards sho
 - Licensed market-data feeds for US and NSE/BSE (live or 15-minute delayed).
 - Nifty levels and personalised plans wait for SEBI research-analyst / US adviser registration.
 - Parent-consent flow and privacy notice reviewed for COPPA (US) and the DPDP Act (India).
+
+## Screener, scoring and market data (added Nov 13, 2026)
+
+| Market | Free provider | Keys |
+| --- | --- | --- |
+| US prices, 1m to daily | Alpaca market data (IEX feed) | `ALPACA_KEY_ID`, `ALPACA_SECRET_KEY` |
+| India prices, 1m to daily | Upstox API (needs an Upstox account) | `UPSTOX_ACCESS_TOKEN` |
+| Global prices | Twelve Data (800 credits/day) | `TWELVEDATA_API_KEY` |
+| US company results | SEC EDGAR company facts (no key; SEC asks for a contact string) | `SEC_USER_AGENT` |
+| US company news | Finnhub | `FINNHUB_API_KEY` |
+| Economy | FRED | `FRED_API_KEY` |
+
+- **Engine** (`src/lib/ta`): trend on yearly/monthly/weekly/daily/4H/1H/15m; break levels on monthly/weekly/daily; supply/demand zones on daily/4H/1H; money flow, A/D line, OBV, relative volume, VWAP; Wyckoff cycle read; Elliott wave check against the three hard rules.
+- **Score** (`src/lib/score.ts`): 1–10 per factor (trend, momentum, accumulation, business results, news, industry) and a weighted composite; missing data is left out, never guessed.
+- **Screener** (`/screener`): Investment & swing, Day trades, Quick trades. Setups use 1:2 reward:risk with the higher-timeframe trend, 1:1 against it.
+- **Nightly job**: `.github/workflows/ingest.yml` runs `npx tsx scripts/ingest.ts US|IN|GLOBAL` after each close and fills the home map, analysis and setups. Add the keys above as GitHub repository secrets, plus `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`.
+- **Compliance**: India entry/stop/target levels stay hidden until `SIXXAB_SEBI_RA=true` (SEBI research-analyst registration). `SIXXAB_PERSONAL_MODE=true` shows them on a private, single-user install. Free data tiers are mostly for personal or development use; a public launch needs paid data licences.
+- Run `supabase/migrations/0002_stock_quotes.sql` and `0003_analysis.sql` in Supabase.
