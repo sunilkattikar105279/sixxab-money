@@ -9,6 +9,8 @@ const Q = z.object({ market: z.enum(['US', 'IN', 'GLOBAL']).default('US'), mode:
 
 export const maxDuration = 60;
 
+const cache = new Map<string, { at: number; body: unknown }>();
+
 interface Row { symbol: string; name: string; sector: string; composite: number; bias: string; factors: unknown; trends: unknown; setup: Record<string, unknown> | null }
 
 export async function GET(req: Request) {
@@ -34,8 +36,13 @@ export async function GET(req: Request) {
   }
 
   // Quick trades (and first run before any nightly job): compute live from the provider.
+  const ck = `${market}:${mode}`; const hit = cache.get(ck);
+  if (hit && Date.now() - hit.at < (mode === 'quick' ? 60_000 : 15 * 60_000)) return NextResponse.json(hit.body);
+  if (market === 'GLOBAL' && mode !== 'invest') return NextResponse.json({ market, mode, asOf: null, live: true, allowLevels, rows: [], note: 'Global intraday scans need a paid data plan; Global runs in the nightly investment scan.' });
   if (!providerConfigured(market)) return NextResponse.json({ market, mode, asOf: null, live: true, allowLevels, rows: [], note: 'Add this market’s data provider key to run the screener.' });
   const { rows } = await runMarket(market, { intraday: mode === 'quick' });
   const out: Row[] = rows.map((r) => ({ symbol: r.symbol, name: r.name, sector: r.sector, composite: r.score.composite, bias: r.score.bias, factors: r.score.factors, trends: r.tech.trends, setup: strip((r.setups[mode] as unknown as Record<string, unknown>) ?? null) }));
-  return NextResponse.json({ market, mode, asOf: new Date().toISOString(), live: true, allowLevels, rows: out.sort((x, y) => Number(!!y.setup) - Number(!!x.setup) || y.composite - x.composite) });
+  const body = { market, mode, asOf: new Date().toISOString(), live: true, allowLevels, rows: out.sort((x, y) => Number(!!y.setup) - Number(!!x.setup) || y.composite - x.composite) };
+  cache.set(ck, { at: Date.now(), body });
+  return NextResponse.json(body);
 }

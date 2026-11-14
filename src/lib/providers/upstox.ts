@@ -9,7 +9,7 @@ async function instrumentKey(symbol: string): Promise<string | null> {
   if (symbol.includes('|')) return symbol; // already an instrument key, e.g. NSE_INDEX|Nifty 50
   if (!instruments) {
     instruments = new Map();
-    const res = await fetch('https://assets.upstox.com/market-quote/instruments/exchange/NSE.json.gz');
+    const res = await fetch('https://assets.upstox.com/market-quote/instruments/exchange/NSE.json.gz', { signal: AbortSignal.timeout(30_000) });
     if (res.ok && res.body) {
       const text = await new Response(res.body.pipeThrough(new DecompressionStream('gzip'))).text();
       for (const r of JSON.parse(text) as { segment: string; trading_symbol: string; instrument_key: string; instrument_type: string }[]) {
@@ -29,10 +29,10 @@ export async function upstoxBars(symbol: string, tf: '1m' | '5m' | '15m' | '1h' 
   const to = new Date().toISOString().slice(0, 10), from = fromISO.slice(0, 10);
   const headers = { Accept: 'application/json', Authorization: `Bearer ${token}` };
   const parse = (j: { data?: { candles?: [string, number, number, number, number, number][] } }) => (j.data?.candles ?? []).map(([t, o, h, l, c, v]) => ({ t: Date.parse(t), o, h, l, c, v }));
-  const hist = await fetch(`https://api.upstox.com/v3/historical-candle/${encodeURIComponent(key)}/${unit}/${n}/${to}/${from}`, { headers, cache: 'no-store' });
+  const hist = await fetch(`https://api.upstox.com/v3/historical-candle/${encodeURIComponent(key)}/${unit}/${n}/${to}/${from}`, { headers, cache: 'no-store', signal: AbortSignal.timeout(20_000) });
   const bars: Bar[] = hist.ok ? parse(await hist.json()) : [];
   if (tf !== '1d') {
-    const intra = await fetch(`https://api.upstox.com/v3/historical-candle/intraday/${encodeURIComponent(key)}/${unit}/${n}`, { headers, cache: 'no-store' });
+    const intra = await fetch(`https://api.upstox.com/v3/historical-candle/intraday/${encodeURIComponent(key)}/${unit}/${n}`, { headers, cache: 'no-store', signal: AbortSignal.timeout(20_000) });
     if (intra.ok) bars.push(...parse(await intra.json()));
   }
   return bars.sort((a, b) => a.t - b.t);

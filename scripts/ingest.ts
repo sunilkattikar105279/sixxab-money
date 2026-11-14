@@ -29,7 +29,7 @@ async function main() {
   const asOf = new Date().toISOString().slice(0, 10);
   if (indices.length) await db.from('market_snapshots').upsert({ market, as_of: asOf, source, indices }, { onConflict: 'market,as_of' });
 
-  const { rows } = await runMarket(market);
+  const { rows } = await runMarket(market, { enrich: true });
   if (!rows.length) { console.log(`No data for ${market}: check provider keys.`); return; }
   await db.from('stock_quotes').upsert(rows.map((r) => ({ market, as_of: asOf, symbol: r.symbol, name: r.name, sector: r.sector, price: r.tech.price, change_pct: r.tech.changePct, market_cap: null, source })), { onConflict: 'market,as_of,symbol' });
   await db.from('stock_analysis').upsert(rows.map((r) => ({ market, as_of: asOf, symbol: r.symbol, name: r.name, sector: r.sector, composite: r.score.composite, bias: r.score.bias, factors: r.score.factors, tech: r.tech, source })), { onConflict: 'market,as_of,symbol' });

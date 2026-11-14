@@ -13,7 +13,7 @@ export async function alpacaBars(symbol: string, tf: '1m' | '5m' | '15m' | '1h' 
     u.searchParams.set('timeframe', TF[tf]); u.searchParams.set('start', startISO); u.searchParams.set('limit', '10000');
     u.searchParams.set('adjustment', 'all'); u.searchParams.set('feed', process.env.ALPACA_FEED || 'iex');
     if (page) u.searchParams.set('page_token', page);
-    const res = await fetch(u, { headers: { 'APCA-API-KEY-ID': id, 'APCA-API-SECRET-KEY': secret }, cache: 'no-store' });
+    const res = await fetch(u, { headers: { 'APCA-API-KEY-ID': id, 'APCA-API-SECRET-KEY': secret }, cache: 'no-store', signal: AbortSignal.timeout(20_000) });
     if (!res.ok) break;
     const j = (await res.json()) as { bars?: { t: string; o: number; h: number; l: number; c: number; v: number }[]; next_page_token?: string };
     (j.bars ?? []).forEach((b) => out.push({ t: Date.parse(b.t), o: b.o, h: b.h, l: b.l, c: b.c, v: b.v }));

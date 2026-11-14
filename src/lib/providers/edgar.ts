@@ -7,7 +7,7 @@ const UA = () => process.env.SEC_USER_AGENT || 'SIXXAB Money research contact@ex
 async function cik(ticker: string): Promise<number | null> {
   if (!ciks) {
     ciks = new Map();
-    const res = await fetch('https://www.sec.gov/files/company_tickers.json', { headers: { 'User-Agent': UA() } });
+    const res = await fetch('https://www.sec.gov/files/company_tickers.json', { headers: { 'User-Agent': UA() }, signal: AbortSignal.timeout(20_000) });
     if (res.ok) Object.values((await res.json()) as Record<string, { cik_str: number; ticker: string }>).forEach((r) => ciks!.set(r.ticker.toUpperCase(), r.cik_str));
   }
   return ciks.get(ticker.toUpperCase().replace('.', '-')) ?? null;
@@ -23,7 +23,7 @@ function annual(f: Fact | undefined): { fy: number; val: number }[] {
 
 export async function edgarFundamentals(ticker: string): Promise<Fundamentals | null> {
   const c = await cik(ticker); if (!c) return null;
-  const res = await fetch(`https://data.sec.gov/api/xbrl/companyfacts/CIK${String(c).padStart(10, '0')}.json`, { headers: { 'User-Agent': UA() } });
+  const res = await fetch(`https://data.sec.gov/api/xbrl/companyfacts/CIK${String(c).padStart(10, '0')}.json`, { headers: { 'User-Agent': UA() }, signal: AbortSignal.timeout(20_000) });
   if (!res.ok) return null;
   const g = ((await res.json()) as { facts?: { 'us-gaap'?: Record<string, Fact> } }).facts?.['us-gaap'] ?? {};
   const rev = annual(g.RevenueFromContractWithCustomerExcludingAssessedTax ?? g.Revenues ?? g.SalesRevenueNet);
