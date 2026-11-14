@@ -4,6 +4,9 @@ import { AgentAsk } from '@/components/AgentAsk';
 import { MoodCheckin } from '@/components/MoodCheckin';
 import { STAGES, stageOf, netWorthProgress, formatMoney, type Country } from '@/lib/sixs';
 import { memberClient } from '@/lib/supabase/server';
+import { VideoRail } from '@/components/VideoRail';
+import { StageIcon } from '@/components/StageIcon';
+import { videos } from '@/lib/media';
 
 interface View { sample: boolean; stage: number; country: Country; netWorth: number; habitMonths: number; goals: { goal: string; how: string; done: boolean }[] }
 
@@ -38,12 +41,14 @@ export default async function MyMoney() {
   const v = await load();
   const s = stageOf(v.stage);
   const nw = netWorthProgress(s, v.netWorth, v.country);
+  const clips = await videos({ stage: s.n, limit: 6 });
   return (
     <>
       <Header active="My Money" />
       <main className="wrap">
         <section className="card" style={{ display: 'flex', flexWrap: 'wrap', gap: 20, alignItems: 'center' }}>
           <div style={{ flex: '1 1 320px' }}>
+            <StageIcon n={s.n} size={48} />
             <div className="tag gold">{v.sample ? 'Sample member · ' : ''}Stage {s.n} of 6</div>
             <h1 style={{ fontSize: 32, margin: '6px 0' }}>{s.name}</h1>
             <p className="muted" style={{ margin: 0 }}>{s.focus}</p>
@@ -68,6 +73,7 @@ export default async function MyMoney() {
                 </ol>
               ) : <p className="muted">Your coach drafts a plan after your first check-in.</p>}
             </section>
+            <VideoRail title={`Videos for the ${s.name} stage`} items={clips} />
             <section className="card">
               <h2 style={{ marginBottom: 12 }}>All six stages</h2>
               <ol className="stages">

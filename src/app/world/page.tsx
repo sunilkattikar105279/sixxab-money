@@ -1,6 +1,8 @@
 import { Header, Footer } from '@/components/Header';
 import { AgentAsk } from '@/components/AgentAsk';
 import { adminClient } from '@/lib/supabase/admin';
+import { Reel } from '@/components/Reel';
+import { LIBRARY } from '@/lib/media';
 
 export const revalidate = 600;
 
@@ -48,6 +50,7 @@ export default async function World() {
             <div className="dim" style={{ fontSize: 12 }}>Sources: {top.sources}</div>
           </article>
           <aside className="side">
+            {top.id === 'sample' && (() => { const v = LIBRARY.find((x) => x.id === 'nvda-story')!; return <section className="card"><h2 style={{ marginBottom: 10 }}>Watch: the full story</h2><Reel url={v.url} title={v.title} /></section>; })()}
             <section className="card">
               <h2 style={{ marginBottom: 8 }}>Policy tracker</h2>
               {rest.length ? rest.map((b) => (

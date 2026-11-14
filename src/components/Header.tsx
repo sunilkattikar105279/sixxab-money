@@ -1,10 +1,13 @@
 import Link from 'next/link';
+import { memberClient } from '@/lib/supabase/server';
 
 const TABS = [
   ['Home', '/'], ['Screener', '/screener'], ['Economy', '/economy'], ['World & Policy', '/world'], ['My Money', '/my-money'], ['Learn', '/learn'], ['Levels', '/levels'],
 ] as const;
 
-export function Header({ active, market }: { active: string; market?: 'US' | 'IN' | 'GLOBAL' }) {
+export async function Header({ active, market }: { active: string; market?: 'US' | 'IN' | 'GLOBAL' }) {
+  const sb = await memberClient();
+  const user = sb ? (await sb.auth.getUser()).data.user : null;
   return (
     <header className="top">
       <div className="wrap row">
@@ -23,7 +26,12 @@ export function Header({ active, market }: { active: string; market?: 'US' | 'IN
             ))}
           </nav>
         )}
-        <Link href="/my-money" className="btn btn-gold">Start free</Link>
+        {user ? (
+          <form action="/auth/signout" method="post" style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <Link href="/my-money" className="btn btn-line">My Money</Link>
+            <button className="btn" type="submit" style={{ background: 'transparent', color: 'var(--muted)', border: '1px solid var(--line2)' }}>Sign out</button>
+          </form>
+        ) : <Link href="/login" className="btn btn-gold">Sign in</Link>}
       </div>
       <nav className="wrap nav" aria-label="Main">
         {TABS.map(([name, href]) => (

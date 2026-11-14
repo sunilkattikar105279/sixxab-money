@@ -1,6 +1,9 @@
 import { Header, Footer } from '@/components/Header';
+import { Reel } from '@/components/Reel';
+import { videos } from '@/lib/media';
 
-export default function Levels() {
+export default async function Levels() {
+  const [latest] = await videos({ topic: 'daily-brief', limit: 1 });
   return (
     <>
       <Header active="Levels" />
@@ -11,6 +14,7 @@ export default function Levels() {
           <section className="card"><h2>QQQ</h2><p className="muted">Filled each weekday at 7:30 AM CST by the levels job.</p></section>
           <section className="card"><h2>Nifty 50</h2><p className="muted">Held until SIXXAB Money is a SEBI-registered research analyst. Until then, India levels are not shown.</p></section>
         </div>
+        {latest && <section className="card"><h2 style={{ marginBottom: 10 }}>Latest brief with levels</h2><Reel url={latest.url} title={latest.title} /></section>}
         <Footer note="US index levels only · educational scenarios, not a recommendation" />
       </main>
     </>

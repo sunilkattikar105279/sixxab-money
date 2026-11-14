@@ -6,6 +6,9 @@ import Link from 'next/link';
 import { getStocks } from '@/lib/data/stocks';
 import { IndustryMap } from '@/components/IndustryMap';
 import { StockTable } from '@/components/StockTable';
+import { VideoRail } from '@/components/VideoRail';
+import { StageIcon } from '@/components/StageIcon';
+import { videos } from '@/lib/media';
 
 export const revalidate = 300;
 
@@ -22,7 +25,7 @@ const sign = (v: number | null) => (v === null ? '' : v > 0 ? '+' : v < 0 ? '−
 export default async function Home({ searchParams }: { searchParams: Promise<{ m?: string }> }) {
   const { m } = await searchParams;
   const market: Market = m === 'IN' || m === 'GLOBAL' ? m : 'US';
-  const [snap, brief, board] = await Promise.all([getSnapshot(market), market === 'US' ? latestBrief() : Promise.resolve(null), getStocks(market)]);
+  const [snap, brief, board, briefs] = await Promise.all([getSnapshot(market), market === 'US' ? latestBrief() : Promise.resolve(null), getStocks(market), videos({ topic: 'daily-brief', limit: 4 })]);
   const mapTitle = market === 'US' ? 'US industry map' : market === 'IN' ? 'India industry map (NSE)' : 'Global industry map';
   const fallbackBrief = market === 'US' && snap.sample
     ? 'Chip stocks pulled the Nasdaq down 0.9% after Nvidia’s CEO exit, while the Dow edged up. More stocks fell than rose.'
@@ -53,6 +56,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ m
 
         <IndustryMap board={board} title={mapTitle} />
 
+        <VideoRail title="Watch the daily brief" items={briefs} note="Built by the SIXXAB Money agent each weekday" />
+
         <div className="cols">
           <div className="main">
             <StockTable board={board} currency={market === 'US' ? 'USD' : market === 'IN' ? 'INR' : 'local'} />
@@ -62,7 +67,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ m
               </div>
               <ol className="stages">
                 {STAGES.map((s) => (
-                  <li key={s.key}><div className="tag gold">Stage {s.n}</div><div style={{ font: '700 15px var(--head)', color: '#fff', margin: '4px 0' }}>{s.name}</div><div className="muted" style={{ fontSize: 12 }}>{s.focus}</div></li>
+                  <li key={s.key}><StageIcon n={s.n} /><div className="tag gold">Stage {s.n}</div><div style={{ font: '700 15px var(--head)', color: '#fff', margin: '4px 0' }}>{s.name}</div><div className="muted" style={{ fontSize: 12 }}>{s.focus}</div></li>
                 ))}
               </ol>
               <div style={{ marginTop: 14 }}><Link href="/my-money" className="btn btn-line">Find my stage</Link></div>

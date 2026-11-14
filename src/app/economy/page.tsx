@@ -1,6 +1,8 @@
 import { Header, Footer } from '@/components/Header';
 import { AgentAsk } from '@/components/AgentAsk';
 import { getIndicator, INDICATORS } from '@/lib/data/fred';
+import { VideoRail } from '@/components/VideoRail';
+import { videos } from '@/lib/media';
 
 export const revalidate = 3600;
 
@@ -18,7 +20,7 @@ const INDIA = [
 ];
 
 export default async function Economy() {
-  const values = await Promise.all(Object.keys(INDICATORS).map((k) => getIndicator(k)));
+  const [values, clips] = await Promise.all([Promise.all(Object.keys(INDICATORS).map((k) => getIndicator(k))), videos({ topic: 'economy', limit: 4 })]);
   return (
     <>
       <Header active="Economy" />
@@ -47,6 +49,7 @@ export default async function Economy() {
             </article>
           ))}
         </section>
+        <VideoRail title="Economy explained in 60 seconds" items={clips} />
         <AgentAsk title="Ask the economy agent" suggestions={['What does a Fed cut mean for my mortgage?', 'How does an RBI repo-rate change affect my home loan EMI?', 'Is inflation eating my fixed deposit?']} />
         <Footer note="US data: FRED (Federal Reserve Bank of St. Louis) · India: RBI and MOSPI connectors in progress" />
       </main>

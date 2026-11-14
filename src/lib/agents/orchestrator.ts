@@ -21,6 +21,8 @@ export interface AskResult {
   confidence?: string;
   emotion: EmotionPlan & { signals: string[] };
   handshakes: { envelope: Envelope; accepted: boolean; reason?: string }[];
+  consulted?: Domain | null;
+  videos: { title: string; url: string }[];
 }
 
 const routerModel = () => process.env.SIXXAB_ROUTER_MODEL || 'claude-haiku-5-5';
@@ -31,7 +33,7 @@ function client() {
   return new Anthropic();
 }
 
-export async function route(question: string): Promise<{ domain: Domain; country: string }> {
+export async function route(question: string): Promise<{ domain: Domain; also?: Domain | null; country: string }> {
   const res = await client().messages.create({
     model: routerModel(),
     max_tokens: 60,
@@ -41,7 +43,7 @@ export async function route(question: string): Promise<{ domain: Domain; country
   const text = res.content.map((b) => (b.type === 'text' ? b.text : '')).join('');
   try {
     const parsed = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1));
-    if (parsed.domain in DOMAINS) return parsed;
+    if (parsed.domain in DOMAINS) return { domain: parsed.domain, also: parsed.also && parsed.also in DOMAINS && parsed.also !== parsed.domain ? parsed.also : null, country: parsed.country };
   } catch {
     /* fall through */
   }
@@ -66,40 +68,57 @@ export async function ask({ question, memberId, ctx, mood }: AskInput): Promise<
   // Distress: no market content, no model call; support first.
   if (emo.escalate) {
     call('guardrail', 'review', { domain: 'coach' });
-    return { answer: emo.preface ?? '', domain: 'coach', sources: [], flags: ['distress_support'], model: 'rules', emotion: { ...emo, signals }, handshakes };
+    return { answer: emo.preface ?? '', domain: 'coach', sources: [], flags: ['distress_support'], model: 'rules', emotion: { ...emo, signals }, handshakes, videos: [] };
   }
 
   // 2. Route to a domain agent.
-  const { domain } = await route(question);
+  const { domain, also } = await route(question);
   const agent = DOMAINS[domain];
   call(domain, 'answer', { question });
   const tools = toolSchemas(agent.tools);
   const sources: AskResult['sources'] = [];
+  const vids: AskResult['videos'] = [];
 
-  const system = `${agent.prompt}\n\n${BASE_RULES}\nTone: ${toneInstruction(emo)}\nMember context: country=${ctx.country}, minor=${ctx.isMinor}.`;
-  const messages: Anthropic.MessageParam[] = [{ role: 'user', content: question }];
-
-  let final = '';
-  for (let turn = 0; turn < 4; turn++) {
-    const res = await client().messages.create({ model: answerModel(), max_tokens: 900, system, tools, messages });
-    const toolUses = res.content.filter((b): b is Anthropic.ToolUseBlock => b.type === 'tool_use');
-    final = res.content.map((b) => (b.type === 'text' ? b.text : '')).join('').trim();
-    if (res.stop_reason !== 'tool_use' || toolUses.length === 0) break;
-
-    messages.push({ role: 'assistant', content: res.content });
-    const results: Anthropic.ToolResultBlockParam[] = [];
-    for (const tu of toolUses) {
-      const out = await runTool(tu.name, tu.input as Record<string, unknown>, { memberId });
-      sources.push(...out.sources);
-      results.push({ type: 'tool_result', tool_use_id: tu.id, content: JSON.stringify(out.data) });
-    }
-    messages.push({ role: 'user', content: results });
+  // 2b. Consult a second agent for facts when the router asks for one (e.g. coach + markets).
+  let notes = '';
+  if (also) {
+    call(also, 'answer', { question, purpose: 'facts' });
+    const helper = DOMAINS[also];
+    const r = await toolLoop(`${helper.prompt}\n\nGive only the relevant facts in 3 bullets, with sources. No advice.`, question, toolSchemas(helper.tools), memberId, sources, vids, 2);
+    notes = `\n\nFacts from the ${helper.label} agent:\n${r}`;
   }
+
+  const system = `${agent.prompt}\n\n${BASE_RULES}\nTone: ${toneInstruction(emo)}\nMember context: country=${ctx.country}, minor=${ctx.isMinor}.${notes}`;
+  const final = await toolLoop(system, question, tools, memberId, sources, vids, 4);
 
   // 3. Guardrail reviews every answer before the member sees it.
   call('guardrail', 'review', { domain });
   const g = guard(final || 'I could not find an answer to that yet.', ctx);
   const answer = emo.preface ? `${emo.preface}\n\n${g.text}` : g.text;
   const confidence = /confidence:\s*(high|medium|low)/i.exec(final)?.[1]?.toLowerCase();
-  return { answer, domain, sources, flags: g.flags, model: answerModel(), confidence, emotion: { ...emo, signals }, handshakes };
+  return { answer, domain, sources, flags: g.flags, model: answerModel(), confidence, emotion: { ...emo, signals }, handshakes, consulted: also ?? null, videos: dedupe(vids) };
+}
+
+const dedupe = (v: AskResult['videos']) => v.filter((x, i) => v.findIndex((y) => y.url === x.url) === i).slice(0, 2);
+
+/** Runs one agent with its tools until it stops calling them (or the turn limit). Collects sources and videos. */
+async function toolLoop(system: string, question: string, tools: Anthropic.Tool[], memberId: string | undefined, sources: AskResult['sources'], vids: AskResult['videos'], maxTurns: number): Promise<string> {
+  const messages: Anthropic.MessageParam[] = [{ role: 'user', content: question }];
+  let final = '';
+  for (let turn = 0; turn < maxTurns; turn++) {
+    const res = await client().messages.create({ model: answerModel(), max_tokens: 900, system, ...(tools.length ? { tools } : {}), messages });
+    const toolUses = res.content.filter((b): b is Anthropic.ToolUseBlock => b.type === 'tool_use');
+    final = res.content.map((b) => (b.type === 'text' ? b.text : '')).join('').trim();
+    if (res.stop_reason !== 'tool_use' || toolUses.length === 0) break;
+    messages.push({ role: 'assistant', content: res.content });
+    const results: Anthropic.ToolResultBlockParam[] = [];
+    for (const tu of toolUses) {
+      const out = await runTool(tu.name, tu.input as Record<string, unknown>, { memberId });
+      sources.push(...out.sources);
+      if (out.videos) vids.push(...out.videos);
+      results.push({ type: 'tool_result', tool_use_id: tu.id, content: JSON.stringify(out.data) });
+    }
+    messages.push({ role: 'user', content: results });
+  }
+  return final;
 }
