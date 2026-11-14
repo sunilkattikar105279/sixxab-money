@@ -3,6 +3,9 @@ import { getSnapshot, type Market } from '@/lib/data/market';
 import { adminClient } from '@/lib/supabase/admin';
 import { STAGES } from '@/lib/sixs';
 import Link from 'next/link';
+import { getStocks } from '@/lib/data/stocks';
+import { IndustryMap } from '@/components/IndustryMap';
+import { StockTable } from '@/components/StockTable';
 
 export const revalidate = 300;
 
@@ -19,7 +22,8 @@ const sign = (v: number | null) => (v === null ? '' : v > 0 ? '+' : v < 0 ? '−
 export default async function Home({ searchParams }: { searchParams: Promise<{ m?: string }> }) {
   const { m } = await searchParams;
   const market: Market = m === 'IN' || m === 'GLOBAL' ? m : 'US';
-  const [snap, brief] = await Promise.all([getSnapshot(market), market === 'US' ? latestBrief() : Promise.resolve(null)]);
+  const [snap, brief, board] = await Promise.all([getSnapshot(market), market === 'US' ? latestBrief() : Promise.resolve(null), getStocks(market)]);
+  const mapTitle = market === 'US' ? 'US industry map' : market === 'IN' ? 'India industry map (NSE)' : 'Global industry map';
   const fallbackBrief = market === 'US' && snap.sample
     ? 'Chip stocks pulled the Nasdaq down 0.9% after Nvidia’s CEO exit, while the Dow edged up. More stocks fell than rose.'
     : '[The agent brief appears here once this market’s data feed is connected.]';
@@ -47,8 +51,11 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ m
           ))}
         </section>
 
+        <IndustryMap board={board} title={mapTitle} />
+
         <div className="cols">
           <div className="main">
+            <StockTable board={board} currency={market === 'US' ? 'USD' : market === 'IN' ? 'INR' : 'local'} />
             <section className="card" aria-label="Your SIXXAB journey">
               <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: 8, marginBottom: 14 }}>
                 <h2>The SIXXAB journey</h2><span className="dim" style={{ fontSize: 12 }}>Six money stages, from age 11 to legacy</span>
@@ -75,7 +82,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ m
             </section>
           </aside>
         </div>
-        <Footer note={`Market data: ${snap.source}`} />
+        <Footer note={`Index data: ${snap.source} · Stocks: ${board.source}`} />
       </main>
     </>
   );
