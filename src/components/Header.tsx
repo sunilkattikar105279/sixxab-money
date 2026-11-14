@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { memberClient } from '@/lib/supabase/server';
 
 const TABS = [
-  ['Home', '/'], ['Screener', '/screener'], ['Economy', '/economy'], ['World & Policy', '/world'], ['My Money', '/my-money'], ['Learn', '/learn'], ['Levels', '/levels'],
+  ['Home', '/'], ['Screener', '/screener'], ['Maps', '/maps'], ['Economy', '/economy'], ['World & Policy', '/world'], ['My Money', '/my-money'], ['Learn', '/learn'], ['Levels', '/levels'],
 ] as const;
 
 export async function Header({ active, market }: { active: string; market?: 'US' | 'IN' | 'GLOBAL' }) {
