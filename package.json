@@ -4,13 +4,14 @@
   "private": true,
   "description": "SIXXAB Money: transparent money-leadership platform (portal + agents) for US, India and global users",
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "ingest": "tsx scripts/ingest.ts"
+    "ingest": "tsx scripts/ingest.ts",
+    "dev:turbo": "next dev --turbopack"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.60.0",
