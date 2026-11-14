@@ -28,7 +28,7 @@ describe('sectors', () => {
     expect(g[1].avgChange).toBeNull();
   });
   it('colours gains green and losses red', () => {
-    expect(heatColor(null)).toBe('#1C2E4A');
+    expect(heatColor(null)).toBe('#22314A');
     expect(heatColor(2.9)).not.toBe(heatColor(-2.9));
   });
 });

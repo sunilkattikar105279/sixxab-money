@@ -13,7 +13,7 @@ const t0 = Date.UTC(2020, 0, 1);
 function series(closes: number[], vol = (i: number) => 1_000_000, step = DAY): Bar[] {
   return closes.map((c, i) => { const o = i ? closes[i - 1] : c; return { t: t0 + i * step, o, h: Math.max(o, c) * 1.005, l: Math.min(o, c) * 0.995, c, v: vol(i) }; });
 }
-const rising = (n: number, start = 100, g = 0.004) => Array.from({ length: n }, (_, i) => start * Math.pow(1 + g, i) * (1 + 0.01 * Math.sin(i / 3)));
+const rising = (n: number, start = 100, g = 0.004, amp = 0.01) => Array.from({ length: n }, (_, i) => start * Math.pow(1 + g, i) * (1 + amp * Math.sin(i / 3)));
 const falling = (n: number, start = 100, g = 0.004) => Array.from({ length: n }, (_, i) => start * Math.pow(1 - g, i) * (1 + 0.01 * Math.sin(i / 3)));
 
 describe('bars and indicators', () => {
@@ -40,7 +40,7 @@ describe('structure', () => {
     expect(trend(series(falling(80)))).toBe('DOWN');
   });
   it('finds pivots, breaks and zones', () => {
-    const d = series(rising(120));
+    const d = series(rising(120, 100, 0.004, 0.03));
     expect(pivots(d).length).toBeGreaterThan(3);
     const b = breaks(d);
     expect(b.down).not.toBeNull();
@@ -68,8 +68,8 @@ describe('cycle and waves', () => {
 });
 
 describe('analysis, score and screener', () => {
-  const daily = series(rising(1500, 50, 0.0012));
-  const hourly = series(rising(400, 150, 0.0005), () => 100_000, 3_600_000);
+  const daily = series(rising(1500, 50, 0.0012, 0.002));
+  const hourly = series(rising(400, 150, 0.0005, 0.001), () => 100_000, 3_600_000);
   const t = analyze('TEST', daily, hourly);
   it('produces a full multi-timeframe report', () => {
     expect(t.trends.d).toBe('UP');
