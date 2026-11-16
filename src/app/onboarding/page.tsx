@@ -20,7 +20,10 @@ export default function Onboarding() {
   useEffect(() => {
     fetch('/api/profile').then((r) => r.json()).then((j) => {
       if (!j.user) router.replace('/login?join=1');
-      else if (j.profile) router.replace('/my-money');
+      else if (j.profile) {
+        const n = new URLSearchParams(location.search).get('next');
+        router.replace(n && n.startsWith('/') && !n.startsWith('//') ? n : '/my-money');
+      }
     });
     // Guess the country from the browser time zone; the member can change it.
     try { if (Intl.DateTimeFormat().resolvedOptions().timeZone === 'Asia/Kolkata') setCountry('IN'); } catch { /* ignore */ }

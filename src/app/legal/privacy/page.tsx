@@ -11,6 +11,8 @@ export default function Privacy() {
       <ul>
         <li><b>Account:</b> email address, date of birth and country (to apply age rules and show the right market).</li>
         <li><b>Your money journey:</b> plans, goals, budget figures, 6S stage progress and monthly checks you enter.</li>
+        <li><b>Manage money:</b> the budget, emergency fund, debts and accounts you type in. We never connect to or move money in your bank or brokerage.</li>
+        <li><b>Grow money:</b> your auto-trade rules and simulated paper trades.</li>
         <li><b>Mood check-ins:</b> how you feel about money. These are private to you and are never shown to linked parents.</li>
         <li><b>Agent questions and answers:</b> stored in the transparency ledger with sources and model details, plus any Yes/No feedback.</li>
         <li><b>Abuse protection:</b> a one-way hash of your IP address to enforce request limits. We do not store raw IP addresses.</li>

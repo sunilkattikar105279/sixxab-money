@@ -1,7 +1,8 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
-// Keeps the Supabase session fresh on every page request.
+// Keeps the Supabase session fresh on every request, and sends signed-out visitors to sign-in for member pages.
+const MEMBER_ONLY = ['/my-money', '/onboarding', '/admin'];
 export async function middleware(req: NextRequest) {
   let res = NextResponse.next({ request: req });
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL, anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -16,7 +17,14 @@ export async function middleware(req: NextRequest) {
       },
     },
   });
-  await sb.auth.getUser();
+  const { data: { user } } = await sb.auth.getUser();
+  const path = req.nextUrl.pathname;
+  if (!user && MEMBER_ONLY.some((p) => path === p || path.startsWith(p + '/'))) {
+    const to = req.nextUrl.clone();
+    to.pathname = '/login';
+    to.search = `?next=${encodeURIComponent(path)}`;
+    return NextResponse.redirect(to);
+  }
   return res;
 }
 

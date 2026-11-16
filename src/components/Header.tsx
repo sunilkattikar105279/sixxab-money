@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { memberClient } from '@/lib/supabase/server';
 
-const TABS = [
-  ['Home', '/'], ['Screener', '/screener'], ['Maps', '/maps'], ['Economy', '/economy'], ['World & Policy', '/world'], ['My Money', '/my-money'], ['Learn', '/learn'], ['Levels', '/levels'],
+const PUBLIC_TABS = [
+  ['Home', '/'], ['Screener', '/screener'], ['Maps', '/maps'], ['Economy', '/economy'], ['World & Policy', '/world'], ['Learn', '/learn'], ['Levels', '/levels'],
 ] as const;
 
 export async function Header({ active, market }: { active: string; market?: 'US' | 'IN' | 'GLOBAL' }) {
@@ -28,15 +28,21 @@ export async function Header({ active, market }: { active: string; market?: 'US'
         )}
         {user ? (
           <form action="/auth/signout" method="post" style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <Link href="/my-money" className="btn btn-line">My Money</Link>
+            <Link href="/my-money" className="btn btn-gold">My Money</Link>
             <button className="btn" type="submit" style={{ background: 'transparent', color: 'var(--muted)', border: '1px solid var(--line2)' }}>Sign out</button>
           </form>
-        ) : <Link href="/login" className="btn btn-gold">Sign in</Link>}
+        ) : (
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <Link href="/login" className="btn btn-line">Sign in</Link>
+            <Link href="/login?join=1" className="btn btn-gold">Join free</Link>
+          </div>
+        )}
       </div>
       <nav className="wrap nav" aria-label="Main">
-        {TABS.map(([name, href]) => (
+        {PUBLIC_TABS.map(([name, href]) => (
           <Link key={href} href={href} aria-current={name === active ? 'page' : undefined}>{name}</Link>
         ))}
+        {user && <Link href="/my-money" aria-current={active === 'My Money' ? 'page' : undefined} className="nav-member">My Money</Link>}
       </nav>
     </header>
   );

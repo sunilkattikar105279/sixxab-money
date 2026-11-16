@@ -14,6 +14,9 @@ export default function Disclosures() {
       <p>The 1–10 company scores, screener setups (entry, stop, target, reward-to-risk) and index levels are produced by fixed rules from price, volume and public company data, such as trends, cycles, accumulation and distribution, Wyckoff phases and Elliott wave checks. They are educational scenarios that show how these methods work. They do not consider your goals, finances or risk tolerance, they are often wrong, and past patterns do not predict future results.</p>
       <p>India price-based levels and trade setups are not shown to the public.</p>
 
+      <h2>Auto-trading (Grow money)</h2>
+      <p>Grow money places simulated trades on a paper account, using the same rule-based setups and the risk rules each member chooses. Paper results are checked on daily closing prices and ignore commissions, slippage, gaps and taxes, so real results would differ and are often worse. No real money is moved for members, and SIXXAB Money does not hold, manage or have access to members&apos; brokerage accounts. Grow money is available to members aged 18 and over.</p>
+
       <h2>Risk</h2>
       <p>Investing and trading involve risk, including the loss of more than you invest when using leverage, options or short selling. Short-term trading carries higher risk than long-term investing. Talk to a qualified, registered professional before making financial decisions.</p>
 

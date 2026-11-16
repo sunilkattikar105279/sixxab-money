@@ -12,6 +12,7 @@ export default function Login() {
   const [mode, setMode] = useState<'in' | 'up'>('in');
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [next, setNext] = useState('/my-money');
 
   // ?join=1 opens sign-up; ?ref=CODE is kept until onboarding so the friend who invited them gets credit.
   useEffect(() => {
@@ -19,6 +20,8 @@ export default function Login() {
     if (q.get('join') || q.get('ref')) setMode('up');
     const ref = q.get('ref');
     if (ref && /^[a-z0-9]{4,16}$/i.test(ref)) try { localStorage.setItem('sixxab_ref', ref.toLowerCase()); } catch { /* storage off */ }
+    const n = q.get('next');
+    if (n && n.startsWith('/') && !n.startsWith('//')) setNext(n);
   }, []);
 
   const redirect = () => `${location.origin}/auth/callback`;
@@ -32,7 +35,7 @@ export default function Login() {
       setMsg(error ? error.message : 'Almost there: open the email we just sent and tap the link to confirm your account.');
     } else {
       const { error } = await sb.auth.signInWithPassword({ email, password });
-      if (error) setMsg(error.message); else { router.push('/onboarding'); router.refresh(); }
+      if (error) setMsg(error.message); else { router.push(`/onboarding?next=${encodeURIComponent(next)}`); router.refresh(); }
     }
     setBusy(false);
   }
@@ -54,6 +57,7 @@ export default function Login() {
       </Link>
       <form onSubmit={submit} className="card" style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 20 }}>
         {mode === 'up' && <div className="tag gold">Founding members join free</div>}
+        {mode === 'in' && next !== '/my-money' && <p className="muted" style={{ margin: 0 }}>Sign in to open your money dashboard.</p>}
         <h1 style={{ fontSize: 24 }}>{mode === 'in' ? 'Sign in' : 'Join SIXXAB Money free'}</h1>
         {mode === 'up' && <p className="muted" style={{ margin: 0 }}>Your personal money coach, plain-English market briefs and a 90-day plan for US and India. Takes under a minute.</p>}
         <label htmlFor="email">Email</label>

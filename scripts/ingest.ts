@@ -1,6 +1,7 @@
 // Nightly ingest: npx tsx scripts/ingest.ts US|IN|GLOBAL
 // Pulls bars from the market's free provider, analyses, scores and screens, then writes Supabase tables
 // (stock_quotes for the home map, stock_analysis, screener_setups, market_snapshots).
+import { runStrategies } from '../src/lib/autotrade-run';
 import { createClient } from '@supabase/supabase-js';
 import { runMarket } from '../src/lib/pipeline';
 import { getBars, providerName } from '../src/lib/providers';
@@ -37,6 +38,12 @@ async function main() {
   const setups = rows.flatMap((r) => Object.values(r.setups).map((s) => ({ market, as_of: asOf, symbol: s!.symbol, mode: s!.mode, side: s!.side, entry: s!.entry, stop: s!.stop, target: s!.target, rr: s!.rr, with_trend: s!.withTrend, timeframe: s!.timeframe, reasons: s!.reasons, score: s!.score })));
   if (setups.length) await db.from('screener_setups').upsert(setups, { onConflict: 'market,as_of,symbol,mode' });
   console.log(`${market}: ${rows.length} stocks analysed, ${setups.length} setups, ${indices.length} index proxies.`);
+
+  // Grow money: run members' auto-trade strategies on today's setups and closing prices (paper accounts).
+  const prices = Object.fromEntries(rows.map((r) => [r.symbol, r.tech.price]));
+  const allSetups = rows.flatMap((r) => Object.values(r.setups).filter((x): x is NonNullable<typeof x> => !!x));
+  const log = await runStrategies(db, market, allSetups, prices, asOf).catch((e) => [`auto-trade error: ${e instanceof Error ? e.message : e}`]);
+  for (const line of log) console.log(`  ${line}`);
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });

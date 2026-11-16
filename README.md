@@ -80,3 +80,13 @@ Without Supabase or Claude keys the portal still runs in demo mode: US cards sho
 - Growth dashboard for admins: `/admin/growth`. Funnel events go to Vercel Web Analytics (enable it in the Vercel project).
 - Legal pages: `/legal/disclosures`, `/legal/privacy`, `/legal/terms`. Operator, contact email and jurisdiction come from `NEXT_PUBLIC_OPERATOR`, `NEXT_PUBLIC_CONTACT_EMAIL`, `NEXT_PUBLIC_JURISDICTION` (see `src/lib/site.ts`). Have a lawyer review them.
 - Set up custom SMTP in Supabase (Authentication → Emails) before inviting people: the built-in sender only sends a few emails per hour.
+
+## Member area (release 2)
+
+Run `supabase/migrations/0008_manage_grow.sql`. All personal pages live under `/my-money` and need sign-in:
+
+- **Dashboard** `/my-money`: next step, checklist, journey / manage / grow summaries, coach, mood, family.
+- **Journey** `/my-money/journey`: stage gates, monthly check-in (habit + net worth), move-up (database-enforced), 90-day plan, history.
+- **Manage money** `/my-money/manage`: budget vs 50/25/15/10 split, emergency fund, debts with avalanche payoff, assets and net worth.
+- **Grow money** `/my-money/grow` (18+): rules-based auto-trading on a paper account from the nightly signals and levels. The nightly ingest runs every active strategy (`src/lib/autotrade.ts`).
+- Owner only: set `SIXXAB_LIVE_TRADING=true` to mirror new orders to your own Alpaca account as bracket orders. It uses `ALPACA_TRADING_URL` (default: Alpaca paper). Public members always trade on paper.
