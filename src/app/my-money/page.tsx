@@ -14,7 +14,7 @@ export default async function Dashboard() {
   const m = (await getMember())!;
   const me = m.member!;
   const sb = m.sb;
-  const [{ data: checks }, { data: plan }, { count: asked }, { count: checkins }, { data: money }, { data: acct }, { data: open }, { data: links }] = await Promise.all([
+  const [{ data: checks }, { data: plan }, { count: asked }, { count: checkins }, { data: money }, { data: acct }, { count: open }, { data: links }] = await Promise.all([
     sb.from('monthly_checks').select('month, habit_gate_met, net_worth').eq('member_id', me.id).order('month', { ascending: false }).limit(3),
     sb.from('plans').select('goals').eq('member_id', me.id).eq('active', true).maybeSingle(),
     sb.from('agent_ledger').select('id', { count: 'exact', head: true }).eq('member_id', me.id),
