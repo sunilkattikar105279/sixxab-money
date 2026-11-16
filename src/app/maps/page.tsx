@@ -18,7 +18,7 @@ export default async function Maps({ searchParams }: { searchParams: Promise<{ v
   return (
     <>
       <Header active="Maps" />
-      <main className="wrap">
+      <main className="wrap" id="main">
         <nav className="seg" aria-label="Map view" style={{ alignSelf: 'flex-start', flexWrap: 'wrap' }}>
           {VIEWS.map(([k, label]) => <Link key={k} href={`/maps?view=${k}`} aria-current={k === view ? 'true' : undefined} style={{ padding: '0 16px' }}>{label}</Link>)}
         </nav>

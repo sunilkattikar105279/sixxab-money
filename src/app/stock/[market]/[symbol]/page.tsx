@@ -17,14 +17,14 @@ export default async function Stock({ params }: { params: Promise<{ market: stri
   const db = adminClient();
   const row = db ? (await db.from('stock_analysis').select('*').eq('market', market).eq('symbol', sym).order('as_of', { ascending: false }).limit(1).maybeSingle()).data : null;
   if (!row) {
-    return (<><Header active="Screener" /><main className="wrap"><section className="card"><h1 style={{ fontSize: 24 }}>{sym}</h1><p className="muted">No analysis yet. It appears after the nightly scan runs with this market’s data key.</p></section></main></>);
+    return (<><Header active="Screener" /><main className="wrap" id="main"><section className="card"><h1 style={{ fontSize: 24 }}>{sym}</h1><p className="muted">No analysis yet. It appears after the nightly scan runs with this market’s data key.</p></section></main></>);
   }
   const t = row.tech as TechReport; const factors = row.factors as FactorScore[];
   const showLevels = levelsAllowed(market as 'US' | 'IN' | 'GLOBAL');
   return (
     <>
       <Header active="Screener" />
-      <main className="wrap">
+      <main className="wrap" id="main">
         <section className="card" style={{ display: 'flex', flexWrap: 'wrap', gap: 20, alignItems: 'center' }}>
           <div style={{ flex: '1 1 300px' }}><div className="tag dim">{row.sector} · {market} · {row.as_of}</div><h1 style={{ fontSize: 30 }}>{row.symbol} <span className="muted" style={{ fontSize: 18 }}>{row.name}</span></h1><div className="big">{n(t.price)} <span className={t.changePct !== null && t.changePct >= 0 ? 'green' : 'red'} style={{ fontSize: 18 }}>{t.changePct !== null ? `${t.changePct >= 0 ? '+' : ''}${t.changePct.toFixed(2)}%` : ''}</span></div></div>
           <div style={{ textAlign: 'center' }}><div className="tag dim">SIXXAB score</div><div style={{ font: '700 48px var(--head)', color: row.composite >= 7 ? 'var(--green)' : row.composite <= 4 ? 'var(--red)' : 'var(--gold)' }}>{Number(row.composite).toFixed(1)}</div><div className="muted">{row.bias}</div></div>

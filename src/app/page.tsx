@@ -13,6 +13,7 @@ import { getBreadth } from '@/lib/data/breadth';
 import { Breadth } from '@/components/Breadth';
 import { TopMovers } from '@/components/TopMovers';
 import { policyBriefs } from '@/lib/data/policy';
+import { JoinHero } from '@/components/JoinHero';
 
 export const revalidate = 300;
 
@@ -39,7 +40,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ m
   return (
     <>
       <Header active="Home" market={market} />
-      <main className="wrap">
+      <main className="wrap" id="main">
+        <JoinHero />
         <section className="bar" aria-label="Agent brief">
           <span className="tag teal">Agent brief{snap.asOf ? ` · ${snap.asOf}` : ''}</span>
           <span style={{ flex: '1 1 480px' }}>{brief ?? fallbackBrief}</span>

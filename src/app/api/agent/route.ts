@@ -4,6 +4,7 @@ import { ask } from '@/lib/agents/orchestrator';
 import { record } from '@/lib/ledger';
 import { memberClient } from '@/lib/supabase/server';
 import { isMinor } from '@/lib/sixs';
+import { AGENT_RULES, checkLimits, visitorKey } from '@/lib/ratelimit';
 
 const Body = z.object({ question: z.string().min(2).max(1000), country: z.enum(['US', 'IN']).default('US'), mood: z.number().int().min(1).max(5).optional() });
 
@@ -24,6 +25,21 @@ export async function POST(req: Request) {
       if (p?.dob) minor = isMinor(p.dob);
       if (p?.country === 'US' || p?.country === 'IN') country = p.country;
     }
+  }
+
+  // Rate limits: protect the Claude budget and stop abuse. Visitors get a small free allowance; members get more.
+  const key = memberId ? `m:${memberId}` : visitorKey(req);
+  const hit = await checkLimits(key, memberId ? AGENT_RULES.member : AGENT_RULES.anonymous);
+  if (hit) {
+    const error = hit === 'minute'
+      ? 'You are asking quickly. Please wait a minute and try again.'
+      : memberId
+        ? 'You have reached today\'s question limit. It resets in 24 hours.'
+        : 'You have used today\'s free questions. Sign in for free to ask more.';
+    return NextResponse.json({ error }, { status: 429, headers: { 'Retry-After': hit === 'minute' ? '60' : '3600' } });
+  }
+  if (await checkLimits('all', [AGENT_RULES.global])) {
+    return NextResponse.json({ error: 'The agent is very busy today. Please try again tomorrow.' }, { status: 429 });
   }
 
   try {

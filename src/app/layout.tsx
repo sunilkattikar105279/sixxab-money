@@ -1,10 +1,22 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
+import { Analytics } from '@vercel/analytics/next';
+import { SITE } from '@/lib/site';
 import './globals.css';
 
+const description = 'A free personal money coach for the US and India: plain-English market briefs, a 90-day plan for your goal and a 6-stage money journey from age 11. Education, not investment advice.';
+
 export const metadata: Metadata = {
-  title: 'SIXXAB Money: markets, economy and your money, explained',
-  description: 'Transparent money leadership for US, India and global users: markets, economy, world events and a personal 6S money journey from age 11.',
+  metadataBase: new URL(SITE.url),
+  title: { default: 'SIXXAB Money: your money coach for the US and India', template: '%s · SIXXAB Money' },
+  description,
+  applicationName: SITE.name,
+  icons: { icon: '/sixxab-money-logo.png', apple: '/sixxab-money-logo.png' },
+  openGraph: { type: 'website', siteName: SITE.name, title: 'SIXXAB Money: your money coach for the US and India', description, url: '/', images: [{ url: '/sixxab-money-logo.png', alt: 'SIXXAB Money' }] },
+  twitter: { card: 'summary', title: 'SIXXAB Money', description, images: ['/sixxab-money-logo.png'] },
+  alternates: { canonical: '/' },
 };
+
+export const viewport: Viewport = { themeColor: '#081425', colorScheme: 'dark' };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -18,9 +30,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
       </head>
-      <body suppressHydrationWarning>{children}</body>
+      <body suppressHydrationWarning>
+        <a href="#main" className="skip">Skip to content</a>
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }

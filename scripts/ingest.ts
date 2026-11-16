@@ -18,6 +18,7 @@ async function main() {
   if (!url || !key) throw new Error('Supabase env missing');
   const db = createClient(url, key, { auth: { persistSession: false } });
   const source = providerName(market);
+  await db.rpc('prune_rate_limits'); // housekeeping; ignored if migration 0006 isn't run yet
 
   // Index snapshot
   const indices = [];

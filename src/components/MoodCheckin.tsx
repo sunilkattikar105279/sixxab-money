@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { track } from '@/lib/track';
 
 const FACES = [
   [1, 'Very stressed'], [2, 'Worried'], [3, 'Okay'], [4, 'Good'], [5, 'Confident'],
@@ -11,6 +12,7 @@ export function MoodCheckin() {
 
   async function pick(m: number) {
     setMood(m);
+    track('checkin_done');
     const res = await fetch('/api/checkin', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ mood: m }) }).catch(() => null);
     const json = res ? await res.json().catch(() => null) : null;
     setMsg(json?.message ?? 'Thanks for checking in.');

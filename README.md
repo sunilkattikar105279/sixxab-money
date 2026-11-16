@@ -70,3 +70,13 @@ Without Supabase or Claude keys the portal still runs in demo mode: US cards sho
 - My Money: stage gates, tickable 90-day plan (saved), budget split, stage videos, mood check-in, coach, family, linked accounts.
 - `/status` checks every connection; `/login` and `/onboarding` create the member profile.
 - Run `supabase/migrations/0004_videos.sql` and `0005_econ_events.sql`.
+
+
+## Founding-member launch (B2C)
+
+- Run `supabase/migrations/0006_rate_limits.sql` and `0007_founding_members.sql` in the Supabase SQL Editor.
+- The first 100 members get a founding number (free for good), a referral link and a starter 90-day plan from their goal.
+- Agent limits: visitors 5 questions/day, members 40/day, plus a site-wide daily cap (`SIXXAB_AGENT_DAILY_CAP`, default 2000).
+- Growth dashboard for admins: `/admin/growth`. Funnel events go to Vercel Web Analytics (enable it in the Vercel project).
+- Legal pages: `/legal/disclosures`, `/legal/privacy`, `/legal/terms`. Operator, contact email and jurisdiction come from `NEXT_PUBLIC_OPERATOR`, `NEXT_PUBLIC_CONTACT_EMAIL`, `NEXT_PUBLIC_JURISDICTION` (see `src/lib/site.ts`). Have a lawyer review them.
+- Set up custom SMTP in Supabase (Authentication → Emails) before inviting people: the built-in sender only sends a few emails per hour.

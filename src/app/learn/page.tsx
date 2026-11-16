@@ -20,7 +20,7 @@ export default async function Learn() {
   return (
     <>
       <Header active="Learn" />
-      <main className="wrap">
+      <main className="wrap" id="main">
         <section className="bar"><span className="tag teal">Tutor agent</span><span style={{ flex: '1 1 480px' }}>Short lessons matched to your age and stage. Each ends with one question to check you got it.</span></section>
         <section className="grid">
           {STAGES.map((s) => (

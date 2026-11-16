@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
+import { checkLimits, visitorKey, WRITE_RULE } from '@/lib/ratelimit';
 import { memberClient } from '@/lib/supabase/server';
 import { plan } from '@/lib/emotion';
 
 const Body = z.object({ mood: z.number().int().min(1).max(5) });
 
 export async function POST(req: Request) {
+  if (await checkLimits(visitorKey(req), [WRITE_RULE])) return NextResponse.json({ error: 'Too many requests. Please wait a minute.' }, { status: 429 });
   const b = Body.safeParse(await req.json().catch(() => ({})));
   if (!b.success) return NextResponse.json({ error: 'mood must be 1 to 5' }, { status: 400 });
   const p = plan([], b.data.mood as 1 | 2 | 3 | 4 | 5);

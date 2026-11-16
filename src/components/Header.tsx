@@ -45,8 +45,18 @@ export async function Header({ active, market }: { active: string; market?: 'US'
 export function Footer({ note }: { note: string }) {
   return (
     <footer className="foot">
-      <span>{note}</span>
-      <span>Education and scenarios, not investment advice</span>
+      <div className="foot-row">
+        <span>{note}</span>
+        <nav aria-label="Legal and status" className="foot-links">
+          <Link href="/legal/disclosures">Disclosures</Link>
+          <Link href="/legal/privacy">Privacy</Link>
+          <Link href="/legal/terms">Terms</Link>
+          <Link href="/status">Status</Link>
+        </nav>
+      </div>
+      <p className="foot-legal">
+        SIXXAB Money provides financial education only. It is not a registered investment adviser or broker-dealer, and not a SEBI-registered adviser or research analyst. Scores, setups and levels are educational scenarios, not recommendations. Investing involves risk, including loss of principal. Market data may be delayed. <Link href="/legal/disclosures">Read the full disclosures</Link>.
+      </p>
     </footer>
   );
 }

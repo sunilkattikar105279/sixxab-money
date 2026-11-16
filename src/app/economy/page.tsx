@@ -39,7 +39,7 @@ export default async function Economy({ searchParams }: { searchParams: Promise<
   return (
     <>
       <Header active="Economy" />
-      <main className="wrap">
+      <main className="wrap" id="main">
         <section className="bar"><span className="tag teal">Economy agent</span><span style={{ flex: '1 1 480px' }}>Each indicator shows its latest value, source and date, and what it means for your money.</span></section>
         <nav className="seg" aria-label="Country" style={{ alignSelf: 'flex-start' }}>
           {(['US', 'IN', 'GLOBAL'] as const).map((k) => <Link key={k} href={`/economy?c=${k}`} aria-current={k === country ? 'true' : undefined}>{k === 'IN' ? 'India' : k === 'GLOBAL' ? 'Global' : 'US'}</Link>)}

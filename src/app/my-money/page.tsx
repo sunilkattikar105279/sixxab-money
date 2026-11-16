@@ -9,8 +9,12 @@ import { StageIcon } from '@/components/StageIcon';
 import { videos } from '@/lib/media';
 import { PlanList } from '@/components/PlanList';
 import { ageOn } from '@/lib/sixs';
+import { redirect } from 'next/navigation';
+import { adminClient } from '@/lib/supabase/admin';
+import { GetStarted, type Starter } from '@/components/GetStarted';
+import { JoinButton } from '@/components/JoinButton';
 
-interface View { sample: boolean; stage: number; country: Country; netWorth: number; habitMonths: number; goals: { goal: string; how: string; done: boolean }[]; children: { name: string; age: number; stage: number }[] }
+interface View { sample: boolean; stage: number; country: Country; netWorth: number; habitMonths: number; goals: { goal: string; how: string; done: boolean }[]; children: { name: string; age: number; stage: number }[]; me?: Starter }
 
 const SAMPLE: View = {
   sample: true, stage: 3, country: 'US', netWorth: 6200, habitMonths: 2,
@@ -27,19 +31,25 @@ async function load(): Promise<View> {
   if (!sb) return SAMPLE;
   const { data: { user } } = await sb.auth.getUser();
   if (!user) return SAMPLE;
-  const [{ data: p }, { data: checks }, { data: plan }] = await Promise.all([
-    sb.from('profiles').select('stage, country').eq('id', user.id).single(),
+  const [{ data: p }, { data: checks }, { data: plan }, { count: asked }, { count: checkins }] = await Promise.all([
+    sb.from('profiles').select('*').eq('id', user.id).maybeSingle(), // '*' keeps working before migration 0007 adds the founding columns
     sb.from('monthly_checks').select('month, habit_gate_met, net_worth').eq('member_id', user.id).order('month', { ascending: false }).limit(3),
     sb.from('plans').select('goals').eq('member_id', user.id).eq('active', true).maybeSingle(),
+    sb.from('agent_ledger').select('id', { count: 'exact', head: true }).eq('member_id', user.id),
+    sb.from('mood_checkins').select('id', { count: 'exact', head: true }).eq('member_id', user.id),
   ]);
-  if (!p) return SAMPLE;
+  if (!p) redirect('/onboarding');
+  const db = adminClient();
+  const invited = db ? (await db.from('profiles').select('id', { count: 'exact', head: true }).eq('referred_by', user.id)).count ?? 0 : 0;
+  const goals = (plan?.goals as View['goals']) ?? [];
   const { data: links } = await sb.from('family_links').select('child_id').eq('parent_id', user.id);
   const kids = links?.length ? (await sb.from('profiles').select('full_name, dob, stage').in('id', links.map((l) => l.child_id))).data ?? [] : [];
   return {
     children: kids.map((k) => ({ name: k.full_name || 'Child account', age: ageOn(k.dob), stage: k.stage })),
     sample: false, stage: p.stage, country: p.country === 'IN' ? 'IN' : 'US',
     netWorth: Number(checks?.[0]?.net_worth ?? 0), habitMonths: (checks ?? []).filter((c) => c.habit_gate_met).length,
-    goals: (plan?.goals as View['goals']) ?? [],
+    goals,
+    me: { founding: p.founding_number ?? null, code: p.referral_code ?? '', asked: asked ?? 0, checkins: checkins ?? 0, goalsDone: goals.filter((g) => g.done).length, goals: goals.length, invited },
   };
 }
 
@@ -51,7 +61,15 @@ export default async function MyMoney() {
   return (
     <>
       <Header active="My Money" />
-      <main className="wrap">
+      <main className="wrap" id="main">
+        {v.sample && (
+          <section className="bar" aria-label="Join">
+            <span className="tag gold">Sample dashboard</span>
+            <span style={{ flex: '1 1 420px' }}>This is what your dashboard looks like. Join free to get your own stage, 90-day plan and coach.</span>
+            <JoinButton label="Join free" from="my_money_sample" />
+          </section>
+        )}
+        {v.me && <GetStarted me={v.me} />}
         <section className="card" style={{ display: 'flex', flexWrap: 'wrap', gap: 20, alignItems: 'center' }}>
           <div style={{ flex: '1 1 320px' }}>
             <StageIcon n={s.n} size={48} />

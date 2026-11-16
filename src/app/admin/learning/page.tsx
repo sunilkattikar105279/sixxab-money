@@ -16,7 +16,7 @@ export default async function LearningAdmin() {
   return (
     <>
       <Header active="" />
-      <main className="wrap">
+      <main className="wrap" id="main">
         <section className="bar"><span className="tag gold">Learning governance</span><span style={{ flex: '1 1 480px' }}>Agents learn from feedback, but every change is a proposal: evaluated, then shadow, then canary, then human approval, then live. Rollback is one step.</span></section>
         <div className="grid">{ORDER.map((s, i) => <div key={s} className="card"><div className="tag teal">Gate {i + 1}</div><h2 style={{ textTransform: 'capitalize' }}>{s}</h2></div>)}</div>
         <section className="card scroll">

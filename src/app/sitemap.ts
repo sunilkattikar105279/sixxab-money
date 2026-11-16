@@ -1,0 +1,12 @@
+import type { MetadataRoute } from 'next';
+import { SITE } from '@/lib/site';
+
+const PAGES: [string, MetadataRoute.Sitemap[number]['changeFrequency'], number][] = [
+  ['/', 'daily', 1], ['/login?join=1', 'monthly', 0.9], ['/screener', 'daily', 0.8], ['/maps', 'daily', 0.8], ['/economy', 'daily', 0.8],
+  ['/world', 'daily', 0.7], ['/learn', 'weekly', 0.8], ['/levels', 'daily', 0.6], ['/ask', 'monthly', 0.6],
+  ['/legal/disclosures', 'yearly', 0.3], ['/legal/privacy', 'yearly', 0.3], ['/legal/terms', 'yearly', 0.3],
+];
+
+export default function sitemap(): MetadataRoute.Sitemap {
+  return PAGES.map(([path, changeFrequency, priority]) => ({ url: `${SITE.url}${path}`, changeFrequency, priority, lastModified: new Date() }));
+}

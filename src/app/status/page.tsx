@@ -9,7 +9,7 @@ export default async function Status() {
   return (
     <>
       <Header active="" />
-      <main className="wrap">
+      <main className="wrap" id="main">
         <section className="bar"><span className="tag teal">Connections</span><span style={{ flex: '1 1 480px' }}>{bad ? `${bad} connection${bad > 1 ? 's' : ''} failing` : 'No failing connections'}{off ? ` · ${off} not configured yet` : ''}. Keys live in .env.local (local) or Vercel environment variables (live).</span></section>
         <section className="card scroll">
           <table className="compact">

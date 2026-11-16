@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
+import { checkLimits, visitorKey, WRITE_RULE } from '@/lib/ratelimit';
 import { memberClient } from '@/lib/supabase/server';
 
 const Body = z.object({ goals: z.array(z.object({ goal: z.string().max(200), how: z.string().max(400), done: z.boolean() })).max(10) });
 
 export async function PATCH(req: Request) {
+  if (await checkLimits(visitorKey(req), [WRITE_RULE])) return NextResponse.json({ error: 'Too many requests. Please wait a minute.' }, { status: 429 });
   const b = Body.safeParse(await req.json().catch(() => ({})));
   if (!b.success) return NextResponse.json({ error: 'invalid plan' }, { status: 400 });
   const sb = await memberClient(); if (!sb) return NextResponse.json({ error: 'not configured' }, { status: 503 });

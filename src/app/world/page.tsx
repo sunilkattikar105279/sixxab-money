@@ -15,7 +15,7 @@ export default async function World({ searchParams }: { searchParams: Promise<{ 
   return (
     <>
       <Header active="World & Policy" />
-      <main className="wrap">
+      <main className="wrap" id="main">
         <section className="bar"><span className="tag teal">World &amp; policy agent</span><span style={{ flex: '1 1 480px' }}>Every brief shows the facts, each side’s strongest case, and what it means for your money. We never take a side.</span></section>
         <nav aria-label="Topic" style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
           {TOPICS.map((x) => <Link key={x} href={x === 'All' ? '/world' : `/world?t=${encodeURIComponent(x)}`} aria-current={x === topic ? 'true' : undefined} style={{ minHeight: 40, display: 'inline-flex', alignItems: 'center', padding: '0 16px', borderRadius: 20, border: '1px solid var(--line2)', background: x === topic ? 'var(--teal)' : 'var(--panel2)', color: x === topic ? '#0B1B33' : 'var(--muted)', fontWeight: 600, fontSize: 13 }}>{x}</Link>)}

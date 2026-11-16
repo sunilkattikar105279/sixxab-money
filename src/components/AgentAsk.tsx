@@ -1,6 +1,8 @@
 'use client';
 import { useState } from 'react';
 import { Reel } from './Reel';
+import { JoinButton } from './JoinButton';
+import { track } from '@/lib/track';
 
 interface Answer { answer: string; domain: string; consulted?: string | null; sources: { name: string; asOf?: string }[]; confidence?: string; ledgerId?: string | null; videos?: { title: string; url: string }[]; error?: string }
 
@@ -20,7 +22,9 @@ export function AgentAsk({ title, suggestions, initial }: { title: string; sugge
     setBusy(true); setA(null); setRated(null);
     try {
       const res = await fetch('/api/agent', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ question }) });
-      setA(await res.json());
+      const j = await res.json();
+      setA(j);
+      if (res.ok) track('question_asked', { page: location.pathname });
     } catch {
       setA({ answer: '', domain: '', sources: [], error: 'Network error. Try again.' });
     } finally { setBusy(false); }
@@ -39,7 +43,12 @@ export function AgentAsk({ title, suggestions, initial }: { title: string; sugge
       </form>
       {a && (
         <div className="inset" role="status">
-          {a.error ? <p className="red" style={{ margin: 0 }}>{a.error}</p> : (
+          {a.error ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-start' }}>
+              <p className="red" style={{ margin: 0 }}>{a.error}</p>
+              {a.error.includes('Sign in') && <JoinButton label="Join free to keep asking" from="agent_limit" />}
+            </div>
+          ) : (
             <>
               <p style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{a.answer}</p>
               <p className="dim" style={{ margin: '8px 0 0', fontSize: 12 }}>

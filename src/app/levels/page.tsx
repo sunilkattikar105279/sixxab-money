@@ -7,7 +7,7 @@ export default async function Levels() {
   return (
     <>
       <Header active="Levels" />
-      <main className="wrap">
+      <main className="wrap" id="main">
         <section className="bar"><span className="tag gold">Educational scenarios</span><span style={{ flex: '1 1 480px' }}>Weekly trend, daily break levels, 4-hour zones and 1-hour triggers for SPX and QQQ, as if/then scenarios. Levels can fail. Not a recommendation.</span></section>
         <div className="grid">
           <section className="card"><h2>SPX</h2><p className="muted">Filled each weekday at 7:30 AM CST by the levels job (same data as the daily brief reel).</p></section>
