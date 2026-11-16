@@ -13,7 +13,6 @@ export const metadata: Metadata = {
   icons: { icon: '/sixxab-money-logo.png', apple: '/sixxab-money-logo.png' },
   openGraph: { type: 'website', siteName: SITE.name, title: 'SIXXAB Money: your money coach for the US and India', description, url: '/', images: [{ url: '/sixxab-money-logo.png', alt: 'SIXXAB Money' }] },
   twitter: { card: 'summary', title: 'SIXXAB Money', description, images: ['/sixxab-money-logo.png'] },
-  alternates: { canonical: '/' },
 };
 
 export const viewport: Viewport = { themeColor: '#081425', colorScheme: 'dark' };
