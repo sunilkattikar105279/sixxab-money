@@ -5,6 +5,7 @@ import type { RegimeRead } from '../regime';
 export async function getRegime(market: 'US' | 'IN'): Promise<RegimeRead | null> {
   try {
     const db = adminClient();
+    if (!db) return null;
     const { data, error } = await db.from('market_regime').select('data').eq('market', market).order('as_of', { ascending: false }).limit(1).maybeSingle();
     if (error || !data) return null;
     return data.data as RegimeRead;
