@@ -60,7 +60,7 @@ export async function edgarFundamentals(ticker: string): Promise<Fundamentals | 
   const res = await secFetch(`https://data.sec.gov/api/xbrl/companyfacts/CIK${String(c).padStart(10, '0')}.json`);
   if (!res) return null;
   const g = ((await res.json()) as { facts?: { 'us-gaap'?: Record<string, Fact> } }).facts?.['us-gaap'] ?? {};
-  const rev = freshest(g, ['Revenues', 'RevenueFromContractWithCustomerExcludingAssessedTax', 'RevenueFromContractWithCustomerIncludingAssessedTax', 'SalesRevenueNet']);
+  const rev = freshest(g, ['Revenues', 'RevenueFromContractWithCustomerExcludingAssessedTax', 'RevenueFromContractWithCustomerIncludingAssessedTax', 'RevenuesAndOtherIncome', 'SalesRevenueNet', 'SalesRevenueGoodsNet']);
   const ni = freshest(g, ['NetIncomeLoss', 'ProfitLoss']), ocf = freshest(g, ['NetCashProvidedByUsedInOperatingActivities', 'NetCashProvidedByUsedInOperatingActivitiesContinuingOperations']);
   const liab = freshest(g, ['Liabilities']), eq = freshest(g, ['StockholdersEquity', 'StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest']);
   const r1 = rev.at(-1), r0 = rev.at(-2);
