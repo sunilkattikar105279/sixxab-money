@@ -16,6 +16,8 @@ export interface TechReport {
   cycle: { weekly: PhaseRead; daily: PhaseRead };
   waves: WaveRead;
   breadth: { aboveSma50: boolean | null; aboveSma200: boolean | null; newHigh52: boolean; newLow52: boolean };
+  /** Earnings and insider trades (US, added by the nightly pipeline). */
+  events?: import('../events').Events | null;
   intraday?: { vwap: number; rvol15: number; rvol5: number; m1Break: Breaks; m5Breaks: Breaks; m15: Trend };
 }
 

@@ -11,6 +11,7 @@ import { cboeHistory } from '../src/lib/providers/cboe';
 import { providerConfigured } from '../src/lib/providers';
 import { readRotation, US_SECTORS, IN_SECTORS } from '../src/lib/rotation';
 import { resolve } from '../src/lib/scorecard';
+import { computeBreadth } from '../src/lib/breadth';
 
 const INDEX_PROXIES: Record<Market, { symbol: string; name: string }[]> = {
   US: [{ symbol: 'SPY', name: 'S&P 500 (SPY)' }, { symbol: 'QQQ', name: 'Nasdaq 100 (QQQ)' }, { symbol: 'DIA', name: 'Dow (DIA)' }, { symbol: 'IWM', name: 'Russell 2000 (IWM)' }],
@@ -55,6 +56,15 @@ async function main() {
 
   const { rows } = await runMarket(market, { enrich: true, regime });
   if (!rows.length) { console.log(`No data for ${market}: check provider keys.`); return; }
+  // Breadth from today's scan joins Sigma's risk read
+  const breadth = market === 'GLOBAL' ? null : computeBreadth(rows.map((r) => r.tech));
+  if (regime && breadth) {
+    regime.breadth = breadth;
+    const { error } = await db.from('market_regime').upsert({ market, as_of: regime.asOf, zone: regime.zone, level: regime.level, data: regime }, { onConflict: 'market,as_of' });
+    console.log(`${market} breadth: ${breadth.read} (${breadth.pctAbove200}% above 200-day, ${breadth.advancers} up / ${breadth.decliners} down)${error ? ` (not stored: ${error.message})` : ''}`);
+  }
+  const withEvents = rows.filter((r) => r.tech.events).length;
+  if (market === 'US') console.log(`US events: earnings and insider data for ${withEvents} of ${rows.length} stocks`);
   await db.from('stock_quotes').upsert(rows.map((r) => ({ market, as_of: asOf, symbol: r.symbol, name: r.name, sector: r.sector, price: r.tech.price, change_pct: r.tech.changePct, market_cap: null, source })), { onConflict: 'market,as_of,symbol' });
   await db.from('stock_analysis').upsert(rows.map((r) => ({ market, as_of: asOf, symbol: r.symbol, name: r.name, sector: r.sector, composite: r.score.composite, bias: r.score.bias, factors: r.score.factors, tech: r.tech, source })), { onConflict: 'market,as_of,symbol' });
   const setups = rows.flatMap((r) => Object.values(r.setups).map((s) => ({ market, as_of: asOf, symbol: s!.symbol, mode: s!.mode, side: s!.side, entry: s!.entry, stop: s!.stop, target: s!.target, rr: s!.rr, with_trend: s!.withTrend, timeframe: s!.timeframe, reasons: s!.reasons, score: s!.score })));

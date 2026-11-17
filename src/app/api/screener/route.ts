@@ -12,7 +12,7 @@ export const maxDuration = 60;
 
 const cache = new Map<string, { at: number; body: unknown }>();
 
-interface Row { symbol: string; name: string; sector: string; composite: number; bias: string; factors: unknown; trends: unknown; setup: Record<string, unknown> | null }
+interface Row { symbol: string; name: string; sector: string; composite: number; bias: string; factors: unknown; trends: unknown; setup: Record<string, unknown> | null; earnings?: string | null }
 
 // Free visitors see the top setups with levels hidden; members see every row with entry, stop and target.
 function gate<T extends { rows: Row[] }>(body: T, member: boolean) {
@@ -39,7 +39,7 @@ export async function GET(req: Request) {
         db.from('screener_setups').select('*').eq('market', market).eq('as_of', latest.as_of).eq('mode', mode),
       ]);
       const setups = new Map((su ?? []).map((s) => [s.symbol, s]));
-      const rows: Row[] = (an ?? []).map((a) => ({ symbol: a.symbol, name: a.name, sector: a.sector, composite: Number(a.composite), bias: a.bias, factors: a.factors, trends: (a.tech as { trends: unknown }).trends, setup: strip(setups.get(a.symbol) ?? null) }));
+      const rows: Row[] = (an ?? []).map((a) => ({ symbol: a.symbol, name: a.name, sector: a.sector, composite: Number(a.composite), bias: a.bias, factors: a.factors, trends: (a.tech as { trends: unknown }).trends, earnings: (a.tech as { events?: { nextEarnings: string | null } }).events?.nextEarnings ?? null, setup: strip(setups.get(a.symbol) ?? null) }));
       return NextResponse.json(gate({ market, mode, asOf: latest.as_of, live: false, allowLevels, rows: rows.sort((x, y) => Number(!!y.setup) - Number(!!x.setup) || y.composite - x.composite) }, member));
     }
   }
@@ -51,7 +51,7 @@ export async function GET(req: Request) {
   if (market === 'GLOBAL') return NextResponse.json({ market, mode, asOf: null, live: false, allowLevels, rows: [], note: mode === 'invest' ? 'Global results come from the nightly scan. Run: node --env-file=.env.local --import tsx scripts/ingest.ts GLOBAL (about 4 minutes), or wait for the nightly job.' : 'Global day and quick trades need a paid data plan; Global is covered by the nightly investment scan.' });
   if (!providerConfigured(market)) return NextResponse.json({ market, mode, asOf: null, live: true, allowLevels, rows: [], note: 'Add this market’s data provider key to run the screener.' });
   const { rows } = await runMarket(market, { intraday: mode === 'quick' });
-  const out: Row[] = rows.map((r) => ({ symbol: r.symbol, name: r.name, sector: r.sector, composite: r.score.composite, bias: r.score.bias, factors: r.score.factors, trends: r.tech.trends, setup: strip((r.setups[mode] as unknown as Record<string, unknown>) ?? null) }));
+  const out: Row[] = rows.map((r) => ({ symbol: r.symbol, name: r.name, sector: r.sector, composite: r.score.composite, bias: r.score.bias, factors: r.score.factors, trends: r.tech.trends, earnings: r.tech.events?.nextEarnings ?? null, setup: strip((r.setups[mode] as unknown as Record<string, unknown>) ?? null) }));
   const body = { market, mode, asOf: new Date().toISOString(), live: true, allowLevels, rows: out.sort((x, y) => Number(!!y.setup) - Number(!!x.setup) || y.composite - x.composite) };
   cache.set(ck, { at: Date.now(), body });
   return NextResponse.json(gate(body, member));

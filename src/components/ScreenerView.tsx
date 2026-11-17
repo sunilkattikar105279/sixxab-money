@@ -5,7 +5,7 @@ import Link from 'next/link';
 type Mode = 'invest' | 'day' | 'quick';
 interface Factor { key: string; label: string; score: number; why: string }
 interface Setup { side: 'long' | 'short' | 'avoid'; entry?: number; stop?: number; target?: number; rr?: number; with_trend?: boolean; withTrend?: boolean; timeframe: string; reasons: string[]; levelsHidden?: boolean; joinToSee?: boolean }
-interface Row { symbol: string; name: string; sector: string; composite: number; bias: string; factors: Factor[]; trends: Record<string, string | null>; setup: Setup | null }
+interface Row { symbol: string; name: string; sector: string; composite: number; bias: string; factors: Factor[]; trends: Record<string, string | null>; setup: Setup | null; earnings?: string | null }
 interface Resp { asOf: string | null; live: boolean; allowLevels: boolean; rows: Row[]; note?: string; gated?: boolean; total?: number }
 
 const MODES: [Mode, string, string][] = [
@@ -63,7 +63,7 @@ export function ScreenerView() {
               {rows.map((r) => (
                 <Fragment key={r.symbol}>
                   <tr onClick={() => setOpen(open === r.symbol ? null : r.symbol)} style={{ cursor: 'pointer' }}>
-                    <td><Link href={`/stock/${market}/${encodeURIComponent(r.symbol)}`} className="mono" style={{ fontWeight: 700 }} onClick={(e) => e.stopPropagation()}>{r.symbol}</Link><div className="dim" style={{ fontSize: 11 }}>{r.sector}</div></td>
+                    <td><Link href={`/stock/${market}/${encodeURIComponent(r.symbol)}`} className="mono" style={{ fontWeight: 700 }} onClick={(e) => e.stopPropagation()}>{r.symbol}</Link>{(() => { const d = r.earnings ? Math.ceil((Date.parse(`${r.earnings}T21:00:00Z`) - Date.now()) / 864e5) : null; return d !== null && d >= 0 && d <= 14 ? <span className={`chip ${d <= 5 ? 'flat' : ''}`} title={`Earnings ${r.earnings}`} style={{ marginLeft: 6, fontSize: 10, color: d <= 5 ? 'var(--gold)' : 'var(--dim)' }}>E {d}d</span> : null; })()}<div className="dim" style={{ fontSize: 11 }}>{r.sector}</div></td>
                     <td><ScoreBar v={r.composite} /></td>
                     {TFS.map(([k]) => <td key={k} style={{ textAlign: 'center' }}><TrendChip v={r.trends?.[k] ?? null} /></td>)}
                     <td>{r.setup ? <span className={`chip ${r.setup.side === 'long' ? 'up' : r.setup.side === 'short' ? 'down' : 'flat'}`}>{r.setup.side === 'avoid' ? 'AVOID' : `${r.setup.side.toUpperCase()} · ${r.setup.timeframe}`}</span> : <span className="dim">—</span>}</td>

@@ -36,6 +36,9 @@ export function scoreStock(t: TechReport, opts: { fundamentals?: Fundamentals | 
     if (f.netMarginPct !== null) { fs += Math.max(-2, Math.min(2, f.netMarginPct / 10)); fw.push(`net margin ${f.netMarginPct.toFixed(0)}%`); }
     if (f.opCashFlowPositive !== null) { fs += f.opCashFlowPositive ? 0.8 : -1; fw.push(f.opCashFlowPositive ? 'cash flow positive' : 'cash flow negative'); }
     if (f.debtToEquity !== null) { fs += f.debtToEquity < 1 ? 0.5 : f.debtToEquity > 3 ? -1 : 0; fw.push(`liabilities/equity ${f.debtToEquity.toFixed(1)}`); }
+    // Insider open-market buying by two or more insiders is a meaningful vote of confidence; selling alone is common and not penalised
+    const ins = t.events?.insider;
+    if (ins && ins.buyers >= 2) { fs += 0.5; fw.push(`${ins.buyers} insiders bought in 90 days`); }
     factors.push({ key: 'fundamentals', label: 'Moat · Business performance', score: clamp(fs), why: `${fw.join(', ')} (${f.period})` });
   }
   const n = opts.news;

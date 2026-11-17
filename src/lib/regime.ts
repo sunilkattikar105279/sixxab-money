@@ -20,6 +20,7 @@ export interface RegimeRead {
   summary: string;
   signals: string[];
   history: Point[];         // last ~250 closes for the chart
+  breadth?: import('./breadth').Breadth | null; // added after the nightly scan
 }
 
 export const THRESHOLDS: Record<'US' | 'IN', [number, number, number]> = { US: [15, 20, 30], IN: [12, 16, 22] }; // calm < a <= normal < b <= elevated < c <= panic

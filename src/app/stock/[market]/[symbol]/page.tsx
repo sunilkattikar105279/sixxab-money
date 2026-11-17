@@ -3,6 +3,7 @@ import { RiskMeter } from '@/components/RiskMeter';
 import { getRegime } from '@/lib/data/regime';
 import { signedIn } from '@/lib/viewer';
 import { JoinPrompt } from '@/components/JoinPrompt';
+import { EventsCard } from '@/components/EventsCard';
 import { notFound } from 'next/navigation';
 import { Header, Footer } from '@/components/Header';
 import { adminClient } from '@/lib/supabase/admin';
@@ -67,6 +68,7 @@ export default async function Stock({ params }: { params: Promise<{ market: stri
               {showLevels && !member && <div style={{ marginTop: 8 }}><JoinPrompt what="The exact levels that confirm or cancel this read" from={here} /></div>}
               <p className="dim" style={{ margin: '6px 0 0', fontSize: 12 }}>Scenarios for learning, not a recommendation.</p>
             </section>
+            {t.events && <EventsCard e={t.events} />}
             <section className="card"><h2 style={{ marginBottom: 8 }}>Pivot · Market cycle (Wyckoff)</h2>
               <p style={{ margin: 0 }}><b>Weekly:</b> {t.cycle.weekly.phase} <span className="dim">({t.cycle.weekly.confidence})</span></p>
               <p style={{ margin: '4px 0' }}><b>Daily:</b> {t.cycle.daily.phase} <span className="dim">({t.cycle.daily.confidence})</span></p>

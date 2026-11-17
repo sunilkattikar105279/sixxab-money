@@ -45,6 +45,7 @@ export function RiskMeter({ r, compact = false }: { r: RegimeRead | null; compac
         {[b, c].filter((v) => v > lo && v < hi).map((v) => <line key={v} x1={0} x2={W} y1={yOf(v)} y2={yOf(v)} stroke={v === c ? 'var(--red)' : 'var(--gold)'} strokeDasharray="3 3" strokeWidth={1} vectorEffect="non-scaling-stroke" />)}
         <polyline points={line} fill="none" stroke={COLOR[r.zone]} strokeWidth={1.6} vectorEffect="non-scaling-stroke" />
       </svg>
+      {r.breadth && <p style={{ margin: '6px 0 0', fontSize: 14 }}><b>Breadth:</b> {r.breadth.read}. {r.breadth.pctAbove200 ?? '—'}% of the {r.breadth.n} stocks we scan are above their 200-day average, {r.breadth.pctAbove50 ?? '—'}% above the 50-day; {r.breadth.advancers} rose and {r.breadth.decliners} fell today; {r.breadth.newHighs} new 52-week highs, {r.breadth.newLows} new lows.</p>}
       {(r.signals.length > 0 || r.volume) && <ul className="muted" style={{ margin: '6px 0 0', paddingLeft: 18, fontSize: 13 }}>
         {r.signals.map((s) => <li key={s}>{s}</li>)}
         {r.volume && <li>Volume: {r.volume.read} ({r.volume.ratio}x the 20-day average)</li>}

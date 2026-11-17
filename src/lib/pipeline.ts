@@ -7,7 +7,8 @@ import { analyze, type TechReport } from './ta/analyze';
 import { scoreStock, headlineTone, type Score } from './score';
 import { screen, type Mode, type Setup } from './screener';
 import { edgarFundamentals } from './providers/edgar';
-import { finnhubHeadlines } from './providers/finnhub';
+import { finnhubHeadlines, finnhubEvents } from './providers/finnhub';
+import { daysUntil } from './events';
 
 export interface Analysed { symbol: string; name: string; sector: string; tech: TechReport; score: Score; setups: Partial<Record<Mode, Setup>> }
 
@@ -49,10 +50,17 @@ export async function runMarket(market: Market, opts: { intraday?: boolean; symb
   const enrich = opts.enrich ?? false;
   const rows = await pool(raw, 4, async (r) => {
     const sec = sectorRet.get(r.l.sector)!; const industryRel = sec.reduce((a, b) => a + b, 0) / sec.length - mkt;
-    const [fundamentals, headlines] = enrich && market === 'US' ? await Promise.all([edgarFundamentals(r.l.symbol).catch((e) => { console.warn(`fundamentals ${r.l.symbol}: ${e instanceof Error ? e.message : e}`); return null; }), finnhubHeadlines(r.l.symbol).catch(() => [])]) : [null, [] as string[]];
+    const [fundamentals, headlines, events] = enrich && market === 'US' ? await Promise.all([edgarFundamentals(r.l.symbol).catch((e) => { console.warn(`fundamentals ${r.l.symbol}: ${e instanceof Error ? e.message : e}`); return null; }), finnhubHeadlines(r.l.symbol).catch(() => []), finnhubEvents(r.l.symbol).catch(() => null)]) : [null, [] as string[], null];
+    if (events) r.tech.events = events;
     const score = scoreStock(r.tech, { fundamentals, news: headlines.length ? headlineTone(headlines) : null, industryRel, regime: opts.regime ?? null });
     const setups: Partial<Record<Mode, Setup>> = {};
-    (['invest', 'day', 'quick'] as Mode[]).forEach((m) => { const s = screen(r.tech, score, m); if (s) setups[m] = s; });
+    // Earnings within 5 days: results can gap price past the stop, so every setup carries the warning first
+    const dE = daysUntil(r.tech.events?.nextEarnings ?? null);
+    (['invest', 'day', 'quick'] as Mode[]).forEach((m) => {
+      const s = screen(r.tech, score, m); if (!s) return;
+      if (dE !== null && dE >= 0 && dE <= 5 && s.side !== 'avoid') s.reasons = [`earnings in ${dE} day${dE === 1 ? '' : 's'}: results can gap past the stop`, ...s.reasons];
+      setups[m] = s;
+    });
     return { symbol: r.l.symbol, name: r.l.name, sector: r.l.sector, tech: r.tech, score, setups } as Analysed;
   });
   return { source: providerName(market), rows };
