@@ -57,13 +57,34 @@ describe('cycle and waves', () => {
     const closes = [...falling(120, 200, 0.006), ...Array.from({ length: 60 }, (_, i) => 97 + 2 * Math.sin(i / 2))];
     expect(wyckoff(series(closes, (i) => (i > 120 ? 1_400_000 : 1_000_000))).phase).toBe('accumulation');
   });
-  it('builds zigzag swings and an Elliott read', () => {
-    const legs = [100, 120, 110, 150, 135, 170];
+  const legsToBars = (legs: number[]) => {
     const closes: number[] = [];
     legs.slice(1).forEach((to, k) => { const from = legs[k]; for (let i = 0; i < 10; i++) closes.push(from + ((to - from) * (i + 1)) / 10); });
-    const d = series([100, ...closes]);
+    return series([legs[0], ...closes]);
+  };
+  it('builds zigzag swings and counts wave 5 in progress', () => {
+    const d = legsToBars([100, 120, 110, 150, 135, 170]);
     expect(zigzag(d, 5).length).toBeGreaterThanOrEqual(5);
-    expect(['impulse-up', 'correction', 'none']).toContain(elliott(d, 5).pattern);
+    const w = elliott(d);
+    expect(w.pattern).toBe('impulse-up');
+    expect(w.wave).toBe('5');
+    expect(w.invalidation).toBeLessThan(140);
+    expect(w.targets?.length).toBeGreaterThan(0);
+    expect(w.summary).toMatch(/wave 5/);
+  });
+  it('reads a pullback after five waves', () => {
+    const w = elliott(legsToBars([100, 120, 110, 150, 135, 170, 155]));
+    expect(['A', '4']).toContain(w.wave);
+    expect(w.points?.at(-1)?.label).toBe('now');
+  });
+  it('mirrors the count for a downtrend', () => {
+    const w = elliott(legsToBars([200, 180, 190, 150, 165, 130]));
+    expect(w.pattern).toBe('impulse-down');
+  });
+  it('returns no count for flat data', () => {
+    const w = elliott(series(Array.from({ length: 80 }, () => 100)));
+    expect(w.pattern).toBe('none');
+    expect(w.summary).toBeTruthy();
   });
 });
 

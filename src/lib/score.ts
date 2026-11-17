@@ -2,7 +2,7 @@
 // Missing factors (no data) are left out and the weights re-normalised, so a score never rests on invented inputs.
 import type { TechReport } from './ta/analyze';
 
-export interface Fundamentals { revenueGrowthPct: number | null; netMarginPct: number | null; opCashFlowPositive: boolean | null; debtToEquity: number | null; period: string }
+export interface Fundamentals { revenueGrowthPct: number | null; netMarginPct: number | null; opCashFlowPositive: boolean | null; debtToEquity: number | null; period: string; stale?: boolean }
 export interface NewsRead { headlines: number; sentiment: number } // sentiment -1..1
 export interface FactorScore { key: 'trend' | 'momentum' | 'accumulation' | 'fundamentals' | 'news' | 'industry'; label: string; score: number; why: string }
 export interface Score { composite: number; factors: FactorScore[]; bias: 'bullish' | 'bearish' | 'neutral' }
@@ -29,7 +29,8 @@ export function scoreStock(t: TechReport, opts: { fundamentals?: Fundamentals | 
   factors.push({ key: 'accumulation', label: 'Accumulation / distribution', score: clamp(acc), why: `Weekly cycle: ${ph} (${t.cycle.weekly.confidence}); money flow ${t.volume.cmf20.toFixed(2)}` });
 
   const f = opts.fundamentals;
-  if (f) {
+  // Old filings would mislead: leave the factor out (its weight is redistributed) rather than score on stale data
+  if (f && !f.stale) {
     let fs = 5; const fw: string[] = [];
     if (f.revenueGrowthPct !== null) { fs += Math.max(-2.5, Math.min(2.5, f.revenueGrowthPct / 8)); fw.push(`revenue ${f.revenueGrowthPct >= 0 ? '+' : ''}${f.revenueGrowthPct.toFixed(0)}% YoY`); }
     if (f.netMarginPct !== null) { fs += Math.max(-2, Math.min(2, f.netMarginPct / 10)); fw.push(`net margin ${f.netMarginPct.toFixed(0)}%`); }

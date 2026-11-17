@@ -1,3 +1,4 @@
+import WaveChart from '@/components/WaveChart';
 import { notFound } from 'next/navigation';
 import { Header, Footer } from '@/components/Header';
 import { adminClient } from '@/lib/supabase/admin';
@@ -47,14 +48,29 @@ export default async function Stock({ params }: { params: Promise<{ market: stri
             </section>
           </div>
           <aside className="side">
+            <section className="card" style={{ borderColor: 'var(--gold)' }}><h2 style={{ marginBottom: 8 }}>What to watch</h2>
+              <ul style={{ margin: 0, paddingLeft: 18, fontSize: 14 }}>
+                <li>Trend: weekly {t.trends.w}, daily {t.trends.d}{t.trends.w !== t.trends.d ? ' (timeframes disagree: wait for them to line up)' : ''}</li>
+                {showLevels && t.breaks.d.up != null && <li>A daily close above <b className="green">{n(t.breaks.d.up)}</b> would confirm strength</li>}
+                {showLevels && t.breaks.d.down != null && <li>A daily close below <b className="red">{n(t.breaks.d.down)}</b> would confirm weakness</li>}
+                {t.waves.wave && <li>Elliott: {t.waves.degree ?? 'daily'} wave {t.waves.wave}{showLevels && t.waves.invalidation != null ? `; count fails beyond ${n(t.waves.invalidation)}` : ''}</li>}
+                <li>Volume: {t.volume.rvolD.toFixed(1)}x average, money flow {t.volume.cmf20 >= 0 ? 'positive' : 'negative'}</li>
+              </ul>
+              <p className="dim" style={{ margin: '6px 0 0', fontSize: 12 }}>Scenarios for learning, not a recommendation.</p>
+            </section>
             <section className="card"><h2 style={{ marginBottom: 8 }}>Market cycle (Wyckoff read)</h2>
               <p style={{ margin: 0 }}><b>Weekly:</b> {t.cycle.weekly.phase} <span className="dim">({t.cycle.weekly.confidence})</span></p>
               <p style={{ margin: '4px 0' }}><b>Daily:</b> {t.cycle.daily.phase} <span className="dim">({t.cycle.daily.confidence})</span></p>
               <ul className="muted" style={{ margin: 0, paddingLeft: 18, fontSize: 13 }}>{[...t.cycle.weekly.notes, ...t.cycle.daily.notes].map((x, i) => <li key={i}>{x}</li>)}</ul>
             </section>
             <section className="card"><h2 style={{ marginBottom: 8 }}>Elliott wave read</h2>
-              <p style={{ margin: 0 }}>{t.waves.pattern === 'none' ? 'No clear count' : `${t.waves.pattern}${t.waves.wave ? `, wave ${t.waves.wave}` : ''}`} <span className="dim">({t.waves.confidence} confidence)</span></p>
+              {t.waves.summary ? <p style={{ margin: 0 }}>{showLevels ? t.waves.summary : t.waves.summary.replace(/\d[\d,.]*/g, '·').replace(/wave ·/g, `wave ${t.waves.wave ?? ''}`)}</p>
+                : <p style={{ margin: 0 }}>{t.waves.pattern === 'none' ? 'No clear count' : `${t.waves.pattern}${t.waves.wave ? `, wave ${t.waves.wave}` : ''}`}</p>}
+              <p className="dim" style={{ margin: '4px 0 0', fontSize: 13 }}>{t.waves.confidence} confidence{t.waves.score != null ? ` · fit ${t.waves.score}/100` : ''}{t.waves.degree ? ` · ${t.waves.degree}` : ''}</p>
+              {t.waves.points && t.waves.points.length > 2 && <WaveChart points={t.waves.points} invalidation={showLevels ? t.waves.invalidation : null} showPrices={showLevels} />}
+              {showLevels && t.waves.targets && t.waves.targets.length > 0 && <table className="compact"><tbody>{t.waves.targets.map((x) => <tr key={x.label}><td className="muted">{x.label}</td><td className="mono" style={{ textAlign: 'right' }}>{n(x.price)}</td></tr>)}{t.waves.invalidation != null && <tr><td className="muted">count fails beyond</td><td className="mono red" style={{ textAlign: 'right' }}>{n(t.waves.invalidation)}</td></tr>}</tbody></table>}
               <ul className="muted" style={{ margin: '4px 0 0', paddingLeft: 18, fontSize: 13 }}>{t.waves.notes.map((x, i) => <li key={i}>{x}</li>)}</ul>
+              {t.waves.alternate && showLevels && <p className="dim" style={{ margin: '6px 0 0', fontSize: 12 }}>Alternate: {t.waves.alternate.summary}</p>}
             </section>
             <section className="card"><h2 style={{ marginBottom: 8 }}>Volume</h2>
               <p style={{ margin: 0 }}>Money flow (20d): <b className={t.volume.cmf20 >= 0 ? 'green' : 'red'}>{t.volume.cmf20.toFixed(2)}</b></p>

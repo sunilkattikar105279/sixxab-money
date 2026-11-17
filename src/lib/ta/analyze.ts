@@ -31,6 +31,20 @@ function coarseTrend(bars: Bar[]): Trend {
 }
 
 /**
+ * The Wyckoff read uses the slope of the 50-bar average; the trend table uses swing structure (higher highs and lows).
+ * When they disagree, say so instead of showing two conflicting labels.
+ */
+function reconcile(read: PhaseRead, structure: Trend): PhaseRead {
+  if (read.phase === 'markup' && structure !== 'UP') {
+    return { ...read, confidence: 'low', notes: [`average still rising, but price structure is ${structure === 'DOWN' ? 'falling' : 'sideways'}: markup is losing momentum`, ...read.notes.filter((x) => x !== 'rising trend')] };
+  }
+  if (read.phase === 'markdown' && structure !== 'DOWN') {
+    return { ...read, confidence: 'low', notes: [`average still falling, but price structure is ${structure === 'UP' ? 'rising' : 'sideways'}: markdown is losing momentum`, ...read.notes.filter((x) => x !== 'falling trend')] };
+  }
+  return read;
+}
+
+/**
  * Full multi-timeframe read.
  * daily: several years of daily bars (5+ preferred). hourly: ~60 days of 1h bars (optional).
  * minute: today's 1m bars (optional, for quick trades).
@@ -53,8 +67,8 @@ export function analyze(symbol: string, daily: Bar[], hourly: Bar[] = [], minute
     breaks: { M: breaks(M, 2), w: breaks(w, 3), d: breaks(daily, 3) },
     zones: { d: zones(daily), h4: h4.length ? zones(h4) : [], h1: hourly.length ? zones(hourly) : [] },
     volume: { cmf20: cmf(daily, 20), rvolD: rvol(daily, 20), obvSlope: slopePct(obv(daily).map((v) => v + 1e12), 20), adSlope: slopePct(adLine(daily).map((v) => v + 1e12), 20) },
-    cycle: { weekly: wyckoff(w), daily: wyckoff(daily) },
-    waves: elliott(daily, 6),
+    cycle: { weekly: reconcile(wyckoff(w), trend(w)), daily: reconcile(wyckoff(daily), trend(daily)) },
+    waves: elliott(daily),
     breadth: (() => {
       const closes = daily.map((b) => b.c);
       const s50 = sma(closes, 50).at(-1), s200 = sma(closes, 200).at(-1);
