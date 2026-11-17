@@ -2,13 +2,34 @@
 import type { Fundamentals } from '../score';
 
 let ciks: Map<string, number> | null = null;
-const UA = () => process.env.SEC_USER_AGENT || 'SIXXAB Money research contact@example.com';
+const UA = () => process.env.SEC_USER_AGENT || 'SIXXAB Money support@sunilkattikar.com';
+
+// SEC allows about 10 requests a second per client: run calls one at a time with a short gap, and retry on 429/5xx.
+let chain: Promise<unknown> = Promise.resolve();
+function secFetch(url: string): Promise<Response | null> {
+  const run = async () => {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      await new Promise((r) => setTimeout(r, 150 + attempt * 1500));
+      try {
+        const res = await fetch(url, { headers: { 'User-Agent': UA(), 'Accept-Encoding': 'gzip, deflate' }, signal: AbortSignal.timeout(25_000) });
+        if (res.ok) return res;
+        console.warn(`SEC ${res.status} for ${url}`);
+        if (res.status !== 429 && res.status < 500) return null;
+      } catch (e) { console.warn(`SEC fetch failed for ${url}: ${e instanceof Error ? e.message : e}`); }
+    }
+    return null;
+  };
+  const p = chain.then(run, run);
+  chain = p.catch(() => null);
+  return p;
+}
 
 async function cik(ticker: string): Promise<number | null> {
   if (!ciks) {
+    const res = await secFetch('https://www.sec.gov/files/company_tickers.json');
+    if (!res) return null; // try again for the next ticker instead of caching an empty map
     ciks = new Map();
-    const res = await fetch('https://www.sec.gov/files/company_tickers.json', { headers: { 'User-Agent': UA() }, signal: AbortSignal.timeout(20_000) });
-    if (res.ok) Object.values((await res.json()) as Record<string, { cik_str: number; ticker: string }>).forEach((r) => ciks!.set(r.ticker.toUpperCase(), r.cik_str));
+    Object.values((await res.json()) as Record<string, { cik_str: number; ticker: string }>).forEach((r) => ciks!.set(r.ticker.toUpperCase(), r.cik_str));
   }
   return ciks.get(ticker.toUpperCase().replace('.', '-')) ?? null;
 }
@@ -36,14 +57,14 @@ function freshest(g: Record<string, Fact>, tags: string[]) {
 
 export async function edgarFundamentals(ticker: string): Promise<Fundamentals | null> {
   const c = await cik(ticker); if (!c) return null;
-  const res = await fetch(`https://data.sec.gov/api/xbrl/companyfacts/CIK${String(c).padStart(10, '0')}.json`, { headers: { 'User-Agent': UA() }, signal: AbortSignal.timeout(20_000) });
-  if (!res.ok) return null;
+  const res = await secFetch(`https://data.sec.gov/api/xbrl/companyfacts/CIK${String(c).padStart(10, '0')}.json`);
+  if (!res) return null;
   const g = ((await res.json()) as { facts?: { 'us-gaap'?: Record<string, Fact> } }).facts?.['us-gaap'] ?? {};
   const rev = freshest(g, ['Revenues', 'RevenueFromContractWithCustomerExcludingAssessedTax', 'RevenueFromContractWithCustomerIncludingAssessedTax', 'SalesRevenueNet']);
   const ni = freshest(g, ['NetIncomeLoss', 'ProfitLoss']), ocf = freshest(g, ['NetCashProvidedByUsedInOperatingActivities', 'NetCashProvidedByUsedInOperatingActivitiesContinuingOperations']);
   const liab = freshest(g, ['Liabilities']), eq = freshest(g, ['StockholdersEquity', 'StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest']);
   const r1 = rev.at(-1), r0 = rev.at(-2);
-  if (!r1) return null;
+  if (!r1) { console.warn(`SEC: no annual revenue found for ${ticker}`); return null; }
   const sameEnd = (xs: { end: string; val: number }[]) => xs.find((x) => x.end === r1.end) ?? null;
   const n1 = sameEnd(ni), o1 = sameEnd(ocf) ?? ocf.at(-1), l1 = sameEnd(liab) ?? liab.at(-1), e1 = sameEnd(eq) ?? eq.at(-1);
   const ageDays = (Date.now() - Date.parse(r1.end)) / 864e5;

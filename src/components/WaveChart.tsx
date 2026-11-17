@@ -3,7 +3,7 @@ import type { WavePoint } from '@/lib/ta/elliott';
 /** Small line through the counted swings, each labelled 0-5 / A-C, with the invalidation level dashed. */
 export default function WaveChart({ points, invalidation, showPrices }: { points: WavePoint[]; invalidation: number | null | undefined; showPrices: boolean }) {
   if (points.length < 3) return null;
-  const W = 300, H = 130, pad = 18;
+  const W = 300, H = 150, pad = 30;
   const prices = points.map((p) => p.price).concat(invalidation ?? []);
   const lo = Math.min(...prices), hi = Math.max(...prices);
   const t0 = points[0].t, t1 = points.at(-1)!.t || t0 + 1;

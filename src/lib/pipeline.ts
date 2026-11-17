@@ -49,7 +49,7 @@ export async function runMarket(market: Market, opts: { intraday?: boolean; symb
   const enrich = opts.enrich ?? false;
   const rows = await pool(raw, 4, async (r) => {
     const sec = sectorRet.get(r.l.sector)!; const industryRel = sec.reduce((a, b) => a + b, 0) / sec.length - mkt;
-    const [fundamentals, headlines] = enrich && market === 'US' ? await Promise.all([edgarFundamentals(r.l.symbol).catch(() => null), finnhubHeadlines(r.l.symbol).catch(() => [])]) : [null, [] as string[]];
+    const [fundamentals, headlines] = enrich && market === 'US' ? await Promise.all([edgarFundamentals(r.l.symbol).catch((e) => { console.warn(`fundamentals ${r.l.symbol}: ${e instanceof Error ? e.message : e}`); return null; }), finnhubHeadlines(r.l.symbol).catch(() => [])]) : [null, [] as string[]];
     const score = scoreStock(r.tech, { fundamentals, news: headlines.length ? headlineTone(headlines) : null, industryRel });
     const setups: Partial<Record<Mode, Setup>> = {};
     (['invest', 'day', 'quick'] as Mode[]).forEach((m) => { const s = screen(r.tech, score, m); if (s) setups[m] = s; });
