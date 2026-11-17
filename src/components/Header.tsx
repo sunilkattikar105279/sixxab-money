@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { suggestions } from '@/lib/search';
 import { memberClient } from '@/lib/supabase/server';
 
 const PUBLIC_TABS = [
@@ -16,8 +17,9 @@ export async function Header({ active, market }: { active: string; market?: 'US'
           <img src="/sixxab-money-logo.png" alt="SIXXAB Money" />
         </Link>
         <form action="/ask" style={{ flex: '1 1 320px' }}>
-          <label className="sr" htmlFor="q">Ask the agent</label>
-          <input id="q" name="q" placeholder="Ask SIXXAB Money, or search a ticker, country or policy" />
+          <label className="sr" htmlFor="q">Search a ticker, company, country or policy, or ask a question</label>
+          <input id="q" name="q" type="search" list="search-suggest" autoComplete="off" enterKeyHint="search" placeholder="Search NVDA, Reliance, tariffs, Fed, India inflation… or ask a question" />
+          <datalist id="search-suggest">{suggestions().map((x) => <option key={x} value={x} />)}</datalist>
         </form>
         {market && (
           <nav className="seg" aria-label="Market">

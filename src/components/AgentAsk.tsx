@@ -1,13 +1,14 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Reel } from './Reel';
 import { JoinButton } from './JoinButton';
 import { track } from '@/lib/track';
 
 interface Answer { answer: string; domain: string; consulted?: string | null; sources: { name: string; asOf?: string }[]; confidence?: string; ledgerId?: string | null; videos?: { title: string; url: string }[]; error?: string }
 
-export function AgentAsk({ title, suggestions, initial }: { title: string; suggestions: string[]; initial?: string }) {
+export function AgentAsk({ title, suggestions, initial, autoRun }: { title: string; suggestions: string[]; initial?: string; autoRun?: boolean }) {
   const [q, setQ] = useState(initial ?? '');
+  const ran = useRef(false);
   const [busy, setBusy] = useState(false);
   const [a, setA] = useState<Answer | null>(null);
   const [rated, setRated] = useState<string | null>(null);
@@ -29,6 +30,10 @@ export function AgentAsk({ title, suggestions, initial }: { title: string; sugge
       setA({ answer: '', domain: '', sources: [], error: 'Network error. Try again.' });
     } finally { setBusy(false); }
   }
+
+  // Questions typed in the header search run straight away instead of waiting for a second click
+  useEffect(() => { if (autoRun && initial && !ran.current) { ran.current = true; void send(initial); } }, [autoRun, initial]); // eslint-disable-line react-hooks/exhaustive-deps
+
 
   return (
     <section className="card" aria-label={title} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
