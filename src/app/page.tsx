@@ -14,6 +14,8 @@ import { Breadth } from '@/components/Breadth';
 import { TopMovers } from '@/components/TopMovers';
 import { policyBriefs } from '@/lib/data/policy';
 import { JoinHero } from '@/components/JoinHero';
+import { RiskMeter } from '@/components/RiskMeter';
+import { getRegime } from '@/lib/data/regime';
 
 export const revalidate = 300;
 
@@ -31,7 +33,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ m
   const { m } = await searchParams;
   const market: Market = m === 'IN' || m === 'GLOBAL' ? m : 'US';
   const [snap, brief, board, briefs] = await Promise.all([getSnapshot(market), market === 'US' ? latestBrief() : Promise.resolve(null), getStocks(market), videos({ topic: 'daily-brief', limit: 4 })]);
-  const [breadth, briefsList] = await Promise.all([getBreadth(market, board), policyBriefs(undefined, 3)]);
+  const [breadth, briefsList, regime] = await Promise.all([getBreadth(market, board), policyBriefs(undefined, 3), market === 'GLOBAL' ? Promise.resolve(null) : getRegime(market)]);
   const mapTitle = market === 'US' ? 'US industry map' : market === 'IN' ? 'India industry map (NSE)' : 'Global industry map';
   const fallbackBrief = market === 'US' && snap.sample
     ? 'Chip stocks pulled the Nasdaq down 0.9% after Nvidia’s CEO exit, while the Dow edged up. More stocks fell than rose.'
@@ -60,6 +62,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ m
             </article>
           ))}
         </section>
+
+        {market !== 'GLOBAL' && <RiskMeter r={regime} />}
 
         <Breadth bars={breadth} />
 

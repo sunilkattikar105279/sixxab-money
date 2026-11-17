@@ -4,13 +4,13 @@ import type { TechReport } from './ta/analyze';
 
 export interface Fundamentals { revenueGrowthPct: number | null; netMarginPct: number | null; opCashFlowPositive: boolean | null; debtToEquity: number | null; period: string; stale?: boolean }
 export interface NewsRead { headlines: number; sentiment: number } // sentiment -1..1
-export interface FactorScore { key: 'trend' | 'momentum' | 'accumulation' | 'fundamentals' | 'news' | 'industry'; label: string; score: number; why: string }
+export interface FactorScore { key: 'trend' | 'momentum' | 'accumulation' | 'fundamentals' | 'news' | 'industry' | 'regime'; label: string; score: number; why: string }
 export interface Score { composite: number; factors: FactorScore[]; bias: 'bullish' | 'bearish' | 'neutral' }
 
 const clamp = (x: number) => Math.max(1, Math.min(10, Math.round(x * 10) / 10));
-const WEIGHTS: Record<FactorScore['key'], number> = { trend: 0.25, momentum: 0.15, accumulation: 0.2, fundamentals: 0.2, news: 0.1, industry: 0.1 };
+const WEIGHTS: Record<FactorScore['key'], number> = { trend: 0.25, momentum: 0.15, accumulation: 0.2, fundamentals: 0.2, news: 0.1, industry: 0.1, regime: 0.1 };
 
-export function scoreStock(t: TechReport, opts: { fundamentals?: Fundamentals | null; news?: NewsRead | null; industryRel?: number | null } = {}): Score {
+export function scoreStock(t: TechReport, opts: { fundamentals?: Fundamentals | null; news?: NewsRead | null; industryRel?: number | null; regime?: { zone: 'calm' | 'normal' | 'elevated' | 'panic'; level: number; gauge: string; spikeFade: boolean } | null } = {}): Score {
   const factors: FactorScore[] = [];
 
   const tf = [t.trends.y, t.trends.M, t.trends.w, t.trends.d];
@@ -42,6 +42,11 @@ export function scoreStock(t: TechReport, opts: { fundamentals?: Fundamentals | 
   if (n && n.headlines > 0) factors.push({ key: 'news', label: 'News tone', score: clamp(5.5 + n.sentiment * 4), why: `${n.headlines} headlines this week, tone ${n.sentiment >= 0 ? '+' : ''}${n.sentiment.toFixed(2)}` });
   if (opts.industryRel !== undefined && opts.industryRel !== null) factors.push({ key: 'industry', label: 'Industry strength', score: clamp(5.5 + opts.industryRel / 2), why: `industry ${opts.industryRel >= 0 ? 'beat' : 'lagged'} the market by ${Math.abs(opts.industryRel).toFixed(1)} pts over a month` });
 
+  const rg = opts.regime;
+  if (rg) {
+    const base = { calm: 6.5, normal: 6, elevated: 4, panic: 2.5 }[rg.zone] + (rg.spikeFade ? 1 : 0);
+    factors.push({ key: 'regime', label: 'Market regime', score: clamp(base), why: `${rg.gauge} ${rg.level.toFixed(1)}, ${rg.zone}${rg.spikeFade ? '; fear spiked and is fading' : ''}` });
+  }
   const wsum = factors.reduce((a, x) => a + WEIGHTS[x.key], 0);
   const composite = clamp(factors.reduce((a, x) => a + x.score * WEIGHTS[x.key], 0) / wsum);
   return { composite, factors, bias: composite >= 6.5 ? 'bullish' : composite <= 4.5 ? 'bearish' : 'neutral' };

@@ -23,7 +23,7 @@ async function pool<T, R>(items: T[], limit: number, fn: (x: T) => Promise<R>): 
   return out;
 }
 
-export async function runMarket(market: Market, opts: { intraday?: boolean; symbols?: string[]; paceMs?: number; enrich?: boolean } = {}): Promise<{ source: string; rows: Analysed[] }> {
+export async function runMarket(market: Market, opts: { intraday?: boolean; symbols?: string[]; paceMs?: number; enrich?: boolean; regime?: import('./regime').RegimeRead | null } = {}): Promise<{ source: string; rows: Analysed[] }> {
   const list = UNIVERSE[market].filter((l) => !opts.symbols || opts.symbols.includes(l.symbol));
   const pace = opts.paceMs ?? (market === 'GLOBAL' ? 8_000 : 0); // Twelve Data free: 8 calls/minute
   const one = async (l: (typeof list)[number]) => {
@@ -50,7 +50,7 @@ export async function runMarket(market: Market, opts: { intraday?: boolean; symb
   const rows = await pool(raw, 4, async (r) => {
     const sec = sectorRet.get(r.l.sector)!; const industryRel = sec.reduce((a, b) => a + b, 0) / sec.length - mkt;
     const [fundamentals, headlines] = enrich && market === 'US' ? await Promise.all([edgarFundamentals(r.l.symbol).catch((e) => { console.warn(`fundamentals ${r.l.symbol}: ${e instanceof Error ? e.message : e}`); return null; }), finnhubHeadlines(r.l.symbol).catch(() => [])]) : [null, [] as string[]];
-    const score = scoreStock(r.tech, { fundamentals, news: headlines.length ? headlineTone(headlines) : null, industryRel });
+    const score = scoreStock(r.tech, { fundamentals, news: headlines.length ? headlineTone(headlines) : null, industryRel, regime: opts.regime ?? null });
     const setups: Partial<Record<Mode, Setup>> = {};
     (['invest', 'day', 'quick'] as Mode[]).forEach((m) => { const s = screen(r.tech, score, m); if (s) setups[m] = s; });
     return { symbol: r.l.symbol, name: r.l.name, sector: r.l.sector, tech: r.tech, score, setups } as Analysed;

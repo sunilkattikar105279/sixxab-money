@@ -6,6 +6,9 @@ import { createClient } from '@supabase/supabase-js';
 import { runMarket } from '../src/lib/pipeline';
 import { getBars, providerName } from '../src/lib/providers';
 import type { Market } from '../src/lib/data/market';
+import { readRegime, type Point, type RegimeRead } from '../src/lib/regime';
+import { cboeHistory } from '../src/lib/providers/cboe';
+import { providerConfigured } from '../src/lib/providers';
 
 const INDEX_PROXIES: Record<Market, { symbol: string; name: string }[]> = {
   US: [{ symbol: 'SPY', name: 'S&P 500 (SPY)' }, { symbol: 'QQQ', name: 'Nasdaq 100 (QQQ)' }, { symbol: 'DIA', name: 'Dow (DIA)' }, { symbol: 'IWM', name: 'Russell 2000 (IWM)' }],
@@ -31,7 +34,24 @@ async function main() {
   const asOf = new Date().toISOString().slice(0, 10);
   if (indices.length) await db.from('market_snapshots').upsert({ market, as_of: asOf, source, indices }, { onConflict: 'market,as_of' });
 
-  const { rows } = await runMarket(market, { enrich: true });
+  // Market risk meter: VIX (CBOE) with SPY volume for the US; India VIX with Nifty for India (needs the Upstox feed)
+  let regime: RegimeRead | null = null;
+  try {
+    if (market === 'US') {
+      const [vix, vix3m, spy] = await Promise.all([cboeHistory('VIX'), cboeHistory('VIX3M'), getBars('US', 'SPY', '1d', 400)]);
+      regime = readRegime({ market: 'US', gauge: vix, gauge3m: vix3m, index: spy });
+    } else if (market === 'IN' && providerConfigured('IN')) {
+      const [iv, nifty] = await Promise.all([getBars('IN', 'NSE_INDEX|India VIX', '1d', 400), getBars('IN', 'NSE_INDEX|Nifty 50', '1d', 400)]);
+      const gauge: Point[] = iv.map((b) => ({ date: new Date(b.t).toISOString().slice(0, 10), value: b.c }));
+      regime = readRegime({ market: 'IN', gauge, index: nifty });
+    }
+    if (regime) {
+      const { error } = await db.from('market_regime').upsert({ market, as_of: regime.asOf, zone: regime.zone, level: regime.level, data: regime }, { onConflict: 'market,as_of' });
+      console.log(`${market} risk meter: ${regime.summary}${error ? ` (not stored: ${error.message}; run migration 0009)` : ''}`);
+    }
+  } catch (e) { console.warn(`risk meter skipped: ${e instanceof Error ? e.message : e}`); }
+
+  const { rows } = await runMarket(market, { enrich: true, regime });
   if (!rows.length) { console.log(`No data for ${market}: check provider keys.`); return; }
   await db.from('stock_quotes').upsert(rows.map((r) => ({ market, as_of: asOf, symbol: r.symbol, name: r.name, sector: r.sector, price: r.tech.price, change_pct: r.tech.changePct, market_cap: null, source })), { onConflict: 'market,as_of,symbol' });
   await db.from('stock_analysis').upsert(rows.map((r) => ({ market, as_of: asOf, symbol: r.symbol, name: r.name, sector: r.sector, composite: r.score.composite, bias: r.score.bias, factors: r.score.factors, tech: r.tech, source })), { onConflict: 'market,as_of,symbol' });
@@ -42,7 +62,7 @@ async function main() {
   // Grow money: run members' auto-trade strategies on today's setups and closing prices (paper accounts).
   const prices = Object.fromEntries(rows.map((r) => [r.symbol, r.tech.price]));
   const allSetups = rows.flatMap((r) => Object.values(r.setups).filter((x): x is NonNullable<typeof x> => !!x));
-  const log = await runStrategies(db, market, allSetups, prices, asOf).catch((e) => [`auto-trade error: ${e instanceof Error ? e.message : e}`]);
+  const log = await runStrategies(db, market, allSetups, prices, asOf, regime?.zone).catch((e) => [`auto-trade error: ${e instanceof Error ? e.message : e}`]);
   for (const line of log) console.log(`  ${line}`);
 }
 

@@ -1,4 +1,6 @@
 import WaveChart from '@/components/WaveChart';
+import { RiskMeter } from '@/components/RiskMeter';
+import { getRegime } from '@/lib/data/regime';
 import { notFound } from 'next/navigation';
 import { Header, Footer } from '@/components/Header';
 import { adminClient } from '@/lib/supabase/admin';
@@ -49,6 +51,7 @@ export default async function Stock({ params }: { params: Promise<{ market: stri
           </div>
           <aside className="side">
             <section className="card" style={{ borderColor: 'var(--gold)' }}><h2 style={{ marginBottom: 8 }}>What to watch</h2>
+              {(market === 'US' || market === 'IN') && <div style={{ marginBottom: 6 }}><RiskMeter r={await getRegime(market)} compact /></div>}
               <ul style={{ margin: 0, paddingLeft: 18, fontSize: 14 }}>
                 <li>Trend: weekly {t.trends.w}, daily {t.trends.d}{t.trends.w !== t.trends.d ? ' (timeframes disagree: wait for them to line up)' : ''}</li>
                 {showLevels && t.breaks.d.up != null && <li>A daily close above <b className="green">{n(t.breaks.d.up)}</b> would confirm strength</li>}

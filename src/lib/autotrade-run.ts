@@ -9,7 +9,7 @@ interface TradeRow { id: number; symbol: string; side: 'long' | 'short'; status:
 const toTrade = (r: TradeRow): Trade => ({ id: r.id, symbol: r.symbol, side: r.side, status: r.status, qty: Number(r.qty), entry: Number(r.entry), stop: Number(r.stop), target: Number(r.target), fillPrice: r.fill_price == null ? null : Number(r.fill_price), exitPrice: r.exit_price, exitReason: r.exit_reason, pnl: r.pnl, setupScore: Number(r.setup_score ?? 0), reasons: r.reasons ?? [], createdOn: r.created_on, openedOn: r.opened_on, closedOn: r.closed_on });
 
 /** Runs every active strategy for a market after the nightly scan. Returns a short log per strategy. */
-export async function runStrategies(db: SupabaseClient, market: string, setups: Setup[], prices: Record<string, number>, today: string) {
+export async function runStrategies(db: SupabaseClient, market: string, setups: Setup[], prices: Record<string, number>, today: string, zone?: 'calm' | 'normal' | 'elevated' | 'panic') {
   const { data: strategies, error } = await db.from('strategies').select('*').eq('market', market).eq('active', true);
   if (error || !strategies?.length) return [];
   const out: string[] = [];
@@ -20,6 +20,9 @@ export async function runStrategies(db: SupabaseClient, market: string, setups: 
     ]);
     if (!acc) continue;
     const rules: Rules = { mode: s.mode, minScore: Number(s.min_score), riskPct: Number(s.risk_pct), maxPositionPct: Number(s.max_position_pct), maxPositions: s.max_positions, dailyLossPct: Number(s.daily_loss_pct), allowShort: s.allow_short, withTrendOnly: s.with_trend_only };
+    // Market regime rule: half size when fear is elevated, no new entries in panic (open trades still managed)
+    if (zone === 'elevated') rules.riskPct = rules.riskPct / 2;
+    if (zone === 'panic') rules.minScore = 11;
     const res = step({
       rules, setups, prices, today,
       account: { cash: Number(acc.cash), equity: Number(acc.equity), startingCash: Number(acc.starting_cash), pausedUntil: acc.paused_until, history: acc.equity_history ?? [] },
