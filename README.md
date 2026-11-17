@@ -1,6 +1,6 @@
 # SIXXAB Money — release 1
 
-A transparent money-leadership platform: a Finviz-style portal plus a team of agents that explain markets, the economy and world events, and coach each member through the six SIXXAB money stages from age 11. Release 1 serves consumers and families in the US and India.
+A transparent money-leadership platform: Money portal plus a team of agents that explain markets, the economy and world events, and coach each member through the six SIXXAB money stages from age 11. Release 1 serves consumers and families in the US and India.
 
 Blueprint: [SIXXAB Money Agent Platform — Blueprint v1](https://claude.ai/artifact/EuneEaY8eu1wtK8kkGt6MC) · Design: [Portal prototype](https://claude.ai/artifact/11UG6FVzJnrJYZ6pNnySZL)
 
