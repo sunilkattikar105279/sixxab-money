@@ -9,6 +9,8 @@ import type { Market } from '../src/lib/data/market';
 import { readRegime, type Point, type RegimeRead } from '../src/lib/regime';
 import { cboeHistory } from '../src/lib/providers/cboe';
 import { providerConfigured } from '../src/lib/providers';
+import { readRotation, US_SECTORS, IN_SECTORS } from '../src/lib/rotation';
+import { resolve } from '../src/lib/scorecard';
 
 const INDEX_PROXIES: Record<Market, { symbol: string; name: string }[]> = {
   US: [{ symbol: 'SPY', name: 'S&P 500 (SPY)' }, { symbol: 'QQQ', name: 'Nasdaq 100 (QQQ)' }, { symbol: 'DIA', name: 'Dow (DIA)' }, { symbol: 'IWM', name: 'Russell 2000 (IWM)' }],
@@ -57,6 +59,39 @@ async function main() {
   await db.from('stock_analysis').upsert(rows.map((r) => ({ market, as_of: asOf, symbol: r.symbol, name: r.name, sector: r.sector, composite: r.score.composite, bias: r.score.bias, factors: r.score.factors, tech: r.tech, source })), { onConflict: 'market,as_of,symbol' });
   const setups = rows.flatMap((r) => Object.values(r.setups).map((s) => ({ market, as_of: asOf, symbol: s!.symbol, mode: s!.mode, side: s!.side, entry: s!.entry, stop: s!.stop, target: s!.target, rr: s!.rr, with_trend: s!.withTrend, timeframe: s!.timeframe, reasons: s!.reasons, score: s!.score })));
   if (setups.length) await db.from('screener_setups').upsert(setups, { onConflict: 'market,as_of,symbol,mode' });
+
+  // Scenario scorecard: track today's long/short setups, then resolve open ones against today's close
+  try {
+    const track = setups.filter((x) => x.side === 'long' || x.side === 'short')
+      .map((x) => ({ market: x.market, as_of: x.as_of, symbol: x.symbol, mode: x.mode, side: x.side, entry: x.entry, stop: x.stop, target: x.target, score: x.score }));
+    if (track.length) await db.from('setup_outcomes').upsert(track, { onConflict: 'market,as_of,symbol,mode', ignoreDuplicates: true });
+    const closes = new Map(rows.map((r) => [r.symbol, r.tech.price]));
+    const { data: open, error } = await db.from('setup_outcomes').select('*').eq('market', market).eq('outcome', 'open').lt('as_of', asOf);
+    if (error) throw new Error(error.message);
+    let resolved = 0;
+    for (const o of open ?? []) {
+      const c = closes.get(o.symbol); if (c == null) continue;
+      const r = resolve({ side: o.side, entry: Number(o.entry), stop: Number(o.stop), target: Number(o.target), as_of: o.as_of }, c, asOf);
+      if (r.outcome !== 'open') { resolved++; await db.from('setup_outcomes').update({ outcome: r.outcome, exit_price: r.exit, r_multiple: r.r, resolved_on: asOf }).eq('market', o.market).eq('as_of', o.as_of).eq('symbol', o.symbol).eq('mode', o.mode); }
+    }
+    console.log(`${market} scorecard: ${track.length} new tracked, ${resolved} resolved, ${(open ?? []).length - resolved} still open`);
+  } catch (e) { console.warn(`scorecard skipped: ${e instanceof Error ? e.message : e} (run migration 0010)`); }
+
+  // Sector rotation (US sector ETFs vs SPY; Nifty sector indices vs Nifty 50 when the India feed is connected)
+  try {
+    const defs = market === 'US' ? US_SECTORS : market === 'IN' && providerConfigured('IN') ? IN_SECTORS : [];
+    if (defs.length) {
+      const indexSym = market === 'US' ? 'SPY' : 'NSE_INDEX|Nifty 50';
+      const index = await getBars(market, indexSym, '1d', 900);
+      const sectors = [];
+      for (const def of defs) sectors.push({ def, bars: await getBars(market, def.symbol, '1d', 900) });
+      const rot = readRotation(market as 'US' | 'IN', index, sectors);
+      if (rot) {
+        const { error } = await db.from('sector_rotation').upsert({ market, as_of: rot.asOf, data: rot }, { onConflict: 'market,as_of' });
+        console.log(`${market} rotation: ${rot.summary}${error ? ` (not stored: ${error.message}; run migration 0010)` : ''}`);
+      }
+    }
+  } catch (e) { console.warn(`rotation skipped: ${e instanceof Error ? e.message : e}`); }
   console.log(`${market}: ${rows.length} stocks analysed, ${setups.length} setups, ${indices.length} index proxies.`);
 
   // Grow money: run members' auto-trade strategies on today's setups and closing prices (paper accounts).

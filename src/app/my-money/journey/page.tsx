@@ -1,3 +1,4 @@
+import { trackFor, weekOf } from '@/lib/curriculum';
 import type { Metadata } from 'next';
 import { getMember } from '@/lib/member';
 import { STAGES, stageOf, canPromote, gatesMet, netWorthProgress, formatMoney, HOLD_MONTHS, type MonthlyCheck } from '@/lib/sixs';
@@ -28,6 +29,7 @@ export default async function Journey() {
   const streak = streakOf(list, s, me.country);
   const fmt = (v: number) => formatMoney(v, me.country);
   const clips = await videos({ stage: s.n, limit: 6 });
+  const wk = weekOf(me.joinedAt), tr = trackFor(s.n), lesson = tr.lessons[wk - 1];
 
   return (
     <main className="wrap" id="main">
@@ -52,6 +54,14 @@ export default async function Journey() {
             </>
           ) : <p className="muted" style={{ margin: 0 }}>You are at the top stage. Keep your estate plan and community fund current, and mentor others.</p>}
         </div>
+      </section>
+      <section className="card" aria-label="This week's lesson" style={{ borderColor: 'var(--teal)' }}>
+        <div className="tag teal">Week {wk} of 12 · {tr.phase[Math.floor((wk - 1) / 4)]}</div>
+        <h2 style={{ margin: '6px 0 4px' }}>{lesson.title}</h2>
+        <p style={{ margin: 0 }}><b>Your action:</b> {lesson.action}</p>
+        <details style={{ marginTop: 8 }}><summary className="dim" style={{ cursor: 'pointer' }}>See all 12 weeks</summary>
+          <ol style={{ margin: '6px 0 0', paddingLeft: 20, fontSize: 14 }}>{tr.lessons.map((l) => <li key={l.week} style={{ opacity: l.week < wk ? 0.6 : 1, fontWeight: l.week === wk ? 600 : 400 }}>{l.title} <span className="muted">· {l.action}</span></li>)}</ol>
+        </details>
       </section>
 
       <div className="cols">

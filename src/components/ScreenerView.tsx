@@ -4,9 +4,9 @@ import Link from 'next/link';
 
 type Mode = 'invest' | 'day' | 'quick';
 interface Factor { key: string; label: string; score: number; why: string }
-interface Setup { side: 'long' | 'short' | 'avoid'; entry?: number; stop?: number; target?: number; rr?: number; with_trend?: boolean; withTrend?: boolean; timeframe: string; reasons: string[]; levelsHidden?: boolean }
+interface Setup { side: 'long' | 'short' | 'avoid'; entry?: number; stop?: number; target?: number; rr?: number; with_trend?: boolean; withTrend?: boolean; timeframe: string; reasons: string[]; levelsHidden?: boolean; joinToSee?: boolean }
 interface Row { symbol: string; name: string; sector: string; composite: number; bias: string; factors: Factor[]; trends: Record<string, string | null>; setup: Setup | null }
-interface Resp { asOf: string | null; live: boolean; allowLevels: boolean; rows: Row[]; note?: string }
+interface Resp { asOf: string | null; live: boolean; allowLevels: boolean; rows: Row[]; note?: string; gated?: boolean; total?: number }
 
 const MODES: [Mode, string, string][] = [
   ['invest', 'Investment & swing', 'Yearly, monthly, weekly trend · weekly/daily breaks · daily demand zones · Wyckoff cycle'],
@@ -54,6 +54,7 @@ export function ScreenerView() {
       <section className="card scroll">
         {busy && <p className="muted" style={{ margin: 0 }}>Scanning…</p>}
         {data?.note && <p className="muted" style={{ margin: 0 }}>{data.note}</p>}
+        {!busy && data?.gated && <div className="inset" style={{ border: '1px dashed var(--gold)', display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between', margin: '0 0 8px' }}><span style={{ fontSize: 14 }}>🔒 Showing the top {data.rows.length} of {data.total} stocks. Members see every setup with entry, stop and target.</span><Link className="btn btn-gold" href="/login?join=1&next=/screener" style={{ minHeight: 36 }}>Join free</Link></div>}
         {!busy && data && !data.allowLevels && <p className="gold" style={{ margin: '0 0 8px', fontSize: 13 }}>India: scores and technical reads only. Entry, stop and target levels appear after SEBI research-analyst registration.</p>}
         {!busy && rows.length > 0 && (
           <table className="compact">
@@ -66,9 +67,9 @@ export function ScreenerView() {
                     <td><ScoreBar v={r.composite} /></td>
                     {TFS.map(([k]) => <td key={k} style={{ textAlign: 'center' }}><TrendChip v={r.trends?.[k] ?? null} /></td>)}
                     <td>{r.setup ? <span className={`chip ${r.setup.side === 'long' ? 'up' : r.setup.side === 'short' ? 'down' : 'flat'}`}>{r.setup.side === 'avoid' ? 'AVOID' : `${r.setup.side.toUpperCase()} · ${r.setup.timeframe}`}</span> : <span className="dim">—</span>}</td>
-                    <td className="mono" style={{ textAlign: 'right' }}>{r.setup?.entry ?? '—'}</td>
-                    <td className="mono red" style={{ textAlign: 'right' }}>{r.setup?.stop ?? '—'}</td>
-                    <td className="mono green" style={{ textAlign: 'right' }}>{r.setup?.target ?? '—'}</td>
+                    <td className="mono" style={{ textAlign: 'right' }}>{r.setup?.joinToSee ? <span className="dim">🔒</span> : (r.setup?.entry ?? '—')}</td>
+                    <td className="mono red" style={{ textAlign: 'right' }}>{r.setup?.joinToSee ? <span className="dim">🔒</span> : (r.setup?.stop ?? '—')}</td>
+                    <td className="mono green" style={{ textAlign: 'right' }}>{r.setup?.joinToSee ? <span className="dim">🔒</span> : (r.setup?.target ?? '—')}</td>
                     <td className="mono">{r.setup?.rr ? `1:${r.setup.rr}` : '—'}</td>
                   </tr>
                   {open === r.symbol && (

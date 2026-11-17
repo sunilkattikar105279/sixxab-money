@@ -3,7 +3,7 @@ import { suggestions } from '@/lib/search';
 import { memberClient } from '@/lib/supabase/server';
 
 const PUBLIC_TABS = [
-  ['Home', '/'], ['Screener', '/screener'], ['Maps', '/maps'], ['Economy', '/economy'], ['World & Policy', '/world'], ['Learn', '/learn'], ['Levels', '/levels'],
+  ['Home', '/'], ['Screener', '/screener'], ['Maps', '/maps'], ['Economy', '/economy'], ['World & Policy', '/world'], ['Stages', '/stages'], ['Sectors', '/sectors'], ['Learn', '/learn'], ['Levels', '/levels'],
 ] as const;
 
 export async function Header({ active, market }: { active: string; market?: 'US' | 'IN' | 'GLOBAL' }) {
@@ -59,6 +59,7 @@ export function Footer({ note }: { note: string }) {
           <Link href="/legal/disclosures">Disclosures</Link>
           <Link href="/legal/privacy">Privacy</Link>
           <Link href="/legal/terms">Terms</Link>
+          <Link href="/metrics">Open metrics</Link>
           <Link href="/status">Status</Link>
         </nav>
       </div>

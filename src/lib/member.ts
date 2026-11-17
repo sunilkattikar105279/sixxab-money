@@ -4,7 +4,7 @@ import type { Country } from './sixs';
 
 export interface Member {
   id: string; email: string | null; name: string | null; dob: string; age: number; adult: boolean;
-  country: Country; stage: number; role: string; status: string; foundingNumber: number | null; referralCode: string | null; goal: string | null;
+  country: Country; stage: number; role: string; status: string; foundingNumber: number | null; referralCode: string | null; goal: string | null; joinedAt: string;
 }
 
 /** The signed-in member with their profile, or null. `sb` is the member's own RLS-scoped client. */
@@ -18,7 +18,7 @@ export async function getMember() {
   const age = ageOn(p.dob);
   const member: Member = {
     id: user.id, email: user.email ?? null, name: p.full_name ?? null, dob: p.dob, age, adult: age >= 18,
-    country: p.country === 'IN' ? 'IN' : 'US', stage: p.stage, role: p.role, status: p.status,
+    country: p.country === 'IN' ? 'IN' : 'US', stage: p.stage, role: p.role, status: p.status, joinedAt: p.created_at,
     foundingNumber: p.founding_number ?? null, referralCode: p.referral_code ?? null, goal: p.goal ?? null,
   };
   return { sb, user, member };

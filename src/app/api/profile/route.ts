@@ -4,6 +4,7 @@ import { checkLimits, visitorKey, WRITE_RULE } from '@/lib/ratelimit';
 import { memberClient } from '@/lib/supabase/server';
 import { ageOn, MIN_AGE } from '@/lib/sixs';
 import { GOALS, STARTER_PLANS, type GoalId } from '@/lib/growth';
+import { placeStage } from '@/lib/curriculum';
 
 const Body = z.object({
   fullName: z.string().max(120).optional(),
@@ -13,6 +14,7 @@ const Body = z.object({
   acceptTerms: z.literal(true),
   emailUpdates: z.boolean().default(false),
   ref: z.string().regex(/^[a-z0-9]{4,16}$/i).optional(),
+  quiz: z.object({ income: z.enum(['none', 'some', 'regular']), savings: z.enum(['none', 'under1', 'oneToSix', 'sixPlus']), investing: z.enum(['no', 'sometimes', 'monthly20', 'givesBack']) }).optional(),
 });
 
 export async function GET() {
@@ -33,8 +35,10 @@ export async function POST(req: Request) {
   const sb = await memberClient(); if (!sb) return NextResponse.json({ error: 'Sign-in is not configured.' }, { status: 503 });
   const { data: { user } } = await sb.auth.getUser(); if (!user) return NextResponse.json({ error: 'Please sign in first.' }, { status: 401 });
   const referredBy = b.data.ref ? ((await sb.rpc('referrer_id', { p_code: b.data.ref })).data as string | null) : null;
+  // Starting stage from the 3-question quiz (set once at sign-up; later moves go through the stage gates)
+  const stage = b.data.quiz ? placeStage(b.data.quiz, ageOn(b.data.dob)) : 1;
   const { error } = await sb.from('profiles').insert({
-    id: user.id, full_name: b.data.fullName ?? null, dob: b.data.dob, country: b.data.country,
+    id: user.id, stage, full_name: b.data.fullName ?? null, dob: b.data.dob, country: b.data.country,
     goal: b.data.goal ?? null, accepted_terms_at: new Date().toISOString(), email_updates: b.data.emailUpdates,
     referred_by: referredBy && referredBy !== user.id ? referredBy : null,
   });
@@ -42,5 +46,5 @@ export async function POST(req: Request) {
   // A new member never lands on an empty page: start a 90-day plan from their goal.
   if (!error && b.data.goal) await sb.from('plans').insert({ member_id: user.id, goals: STARTER_PLANS[b.data.goal] });
   const { data: profile } = await sb.from('profiles').select('status, founding_number').eq('id', user.id).single();
-  return NextResponse.json({ ok: true, status: profile?.status, foundingNumber: profile?.founding_number ?? null });
+  return NextResponse.json({ ok: true, status: profile?.status, foundingNumber: profile?.founding_number ?? null, stage });
 }
