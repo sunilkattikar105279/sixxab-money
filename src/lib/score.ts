@@ -36,7 +36,7 @@ export function scoreStock(t: TechReport, opts: { fundamentals?: Fundamentals | 
     if (f.netMarginPct !== null) { fs += Math.max(-2, Math.min(2, f.netMarginPct / 10)); fw.push(`net margin ${f.netMarginPct.toFixed(0)}%`); }
     if (f.opCashFlowPositive !== null) { fs += f.opCashFlowPositive ? 0.8 : -1; fw.push(f.opCashFlowPositive ? 'cash flow positive' : 'cash flow negative'); }
     if (f.debtToEquity !== null) { fs += f.debtToEquity < 1 ? 0.5 : f.debtToEquity > 3 ? -1 : 0; fw.push(`liabilities/equity ${f.debtToEquity.toFixed(1)}`); }
-    factors.push({ key: 'fundamentals', label: 'Business performance', score: clamp(fs), why: `${fw.join(', ')} (${f.period})` });
+    factors.push({ key: 'fundamentals', label: 'Moat · Business performance', score: clamp(fs), why: `${fw.join(', ')} (${f.period})` });
   }
   const n = opts.news;
   if (n && n.headlines > 0) factors.push({ key: 'news', label: 'News tone', score: clamp(5.5 + n.sentiment * 4), why: `${n.headlines} headlines this week, tone ${n.sentiment >= 0 ? '+' : ''}${n.sentiment.toFixed(2)}` });
@@ -45,7 +45,7 @@ export function scoreStock(t: TechReport, opts: { fundamentals?: Fundamentals | 
   const rg = opts.regime;
   if (rg) {
     const base = { calm: 6.5, normal: 6, elevated: 4, panic: 2.5 }[rg.zone] + (rg.spikeFade ? 1 : 0);
-    factors.push({ key: 'regime', label: 'Market regime', score: clamp(base), why: `${rg.gauge} ${rg.level.toFixed(1)}, ${rg.zone}${rg.spikeFade ? '; fear spiked and is fading' : ''}` });
+    factors.push({ key: 'regime', label: 'Sigma · Market regime', score: clamp(base), why: `${rg.gauge} ${rg.level.toFixed(1)}, ${rg.zone}${rg.spikeFade ? '; fear spiked and is fading' : ''}` });
   }
   const wsum = factors.reduce((a, x) => a + WEIGHTS[x.key], 0);
   const composite = clamp(factors.reduce((a, x) => a + x.score * WEIGHTS[x.key], 0) / wsum);

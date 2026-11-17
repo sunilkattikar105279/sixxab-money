@@ -6,14 +6,14 @@ const COLOR: Record<Zone, string> = { calm: 'var(--green)', normal: 'var(--teal)
 /** Fear gauge: where today sits across the four zones, the 1-year line, and what the engine does about it. */
 export function RiskMeter({ r, compact = false }: { r: RegimeRead | null; compact?: boolean }) {
   if (!r) return compact ? null : (
-    <section className="card"><h2 style={{ marginBottom: 6 }}>Market risk meter</h2><p className="muted" style={{ margin: 0 }}>The fear gauge appears after the next nightly market update.</p></section>
+    <section className="card"><h2 style={{ marginBottom: 6 }}>Sigma · Market risk meter</h2><p className="muted" style={{ margin: 0 }}>The fear gauge appears after the next nightly market update.</p></section>
   );
   const [a, b, c] = THRESHOLDS[r.market];
   const max = Math.max(c * 1.5, r.level * 1.1);
   const pct = (v: number) => `${Math.min(100, (v / max) * 100)}%`;
   if (compact) return (
     <p style={{ margin: 0, fontSize: 14 }}>
-      <b>Market regime:</b> <span style={{ color: COLOR[r.zone], fontWeight: 600 }}>{r.zone}</span> ({r.gauge} {r.level.toFixed(1)}).{' '}
+      <b>Sigma (market regime):</b> <span style={{ color: COLOR[r.zone], fontWeight: 600 }}>{r.zone}</span> ({r.gauge} {r.level.toFixed(1)}).{' '}
       {r.zone === 'elevated' ? 'Breakouts fail more often when fear is elevated; the engine halves sizes.' : r.zone === 'panic' ? 'In panic the engine takes no new paper entries.' : 'Normal sizing.'}
     </p>
   );
@@ -22,9 +22,9 @@ export function RiskMeter({ r, compact = false }: { r: RegimeRead | null; compac
   const line = hist.map((v, i) => `${((i / Math.max(1, hist.length - 1)) * W).toFixed(1)},${(H - 4 - ((v - lo) / span) * (H - 8)).toFixed(1)}`).join(' ');
   const yOf = (v: number) => (H - 4 - ((v - lo) / span) * (H - 8)).toFixed(1);
   return (
-    <section className="card" aria-label={`${r.gauge} risk meter`}>
+    <section className="card" id="risk" aria-label={`Sigma ${r.gauge} risk meter`}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
-        <h2 style={{ margin: 0 }}>Market risk meter · {r.gauge}</h2>
+        <h2 style={{ margin: 0 }}>Sigma · Market risk meter <span className="dim" style={{ fontSize: 14, fontWeight: 400 }}>{r.gauge}</span></h2>
         <span className="dim" style={{ fontSize: 12 }}>as of {r.asOf}</span>
       </div>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, margin: '8px 0' }}>

@@ -21,7 +21,7 @@ export default async function Learn() {
     <>
       <Header active="Learn" />
       <main className="wrap" id="main">
-        <section className="bar"><span className="tag teal">Tutor agent</span><span style={{ flex: '1 1 480px' }}>Short lessons matched to your age and stage. Each ends with one question to check you got it.</span></section>
+        <section className="bar"><span className="tag teal">Basis · Learning agent</span><span style={{ flex: '1 1 480px' }}>Short lessons matched to your age and stage. Each ends with one question to check you got it.</span></section>
         <section className="grid">
           {STAGES.map((s) => (
             <article key={s.key} className="card" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

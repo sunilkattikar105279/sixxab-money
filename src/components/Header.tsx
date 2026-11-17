@@ -2,8 +2,10 @@ import Link from 'next/link';
 import { suggestions } from '@/lib/search';
 import { memberClient } from '@/lib/supabase/server';
 
+// [page key used by `active`, link, agent name, what it does]; agent names come from the team registry
 const PUBLIC_TABS = [
-  ['Home', '/'], ['Screener', '/screener'], ['Maps', '/maps'], ['Economy', '/economy'], ['World & Policy', '/world'], ['Stages', '/stages'], ['Sectors', '/sectors'], ['Learn', '/learn'], ['Levels', '/levels'],
+  ['Home', '/', 'Home', ''], ['Screener', '/screener', 'Quant', 'Screener'], ['Sectors', '/sectors', 'Delta', 'Sectors'], ['Levels', '/levels', 'Pivot', 'Levels'],
+  ['Economy', '/economy', 'Macro', 'Economy'], ['World & Policy', '/world', 'Geo', 'World & policy'], ['Maps', '/maps', 'Maps', ''], ['Stages', '/stages', 'Stages', ''], ['Learn', '/learn', 'Basis', 'Learn'], ['Agents', '/agents', 'Agents', ''],
 ] as const;
 
 export async function Header({ active, market }: { active: string; market?: 'US' | 'IN' | 'GLOBAL' }) {
@@ -18,7 +20,7 @@ export async function Header({ active, market }: { active: string; market?: 'US'
         </Link>
         <form action="/ask" style={{ flex: '1 1 320px' }}>
           <label className="sr" htmlFor="q">Search a ticker, company, country or policy, or ask a question</label>
-          <input id="q" name="q" type="search" list="search-suggest" autoComplete="off" enterKeyHint="search" placeholder="Search NVDA, Reliance, tariffs, Fed, India inflation… or ask a question" />
+          <input id="q" name="q" type="search" list="search-suggest" autoComplete="off" enterKeyHint="search" placeholder="Search NVDA, Reliance, tariffs, Fed… or ask Mentor a question" />
           <datalist id="search-suggest">{suggestions().map((x) => <option key={x} value={x} />)}</datalist>
         </form>
         {market && (
@@ -41,8 +43,10 @@ export async function Header({ active, market }: { active: string; market?: 'US'
         )}
       </div>
       <nav className="wrap nav" aria-label="Main">
-        {PUBLIC_TABS.map(([name, href]) => (
-          <Link key={href} href={href} aria-current={name === active ? 'page' : undefined}>{name}</Link>
+        {PUBLIC_TABS.map(([key, href, name, role]) => (
+          <Link key={href} href={href} aria-current={key === active ? 'page' : undefined} aria-label={role ? `${name}: ${role}` : undefined} title={role || undefined}>
+            {name}{role && <span className="nav-role">{role}</span>}
+          </Link>
         ))}
         {user && <Link href="/my-money" aria-current={active === 'My Money' ? 'page' : undefined} className="nav-member">My Money</Link>}
       </nav>
@@ -59,6 +63,7 @@ export function Footer({ note }: { note: string }) {
           <Link href="/legal/disclosures">Disclosures</Link>
           <Link href="/legal/privacy">Privacy</Link>
           <Link href="/legal/terms">Terms</Link>
+          <Link href="/agents">Meet the agents</Link>
           <Link href="/metrics">Open metrics</Link>
           <Link href="/status">Status</Link>
         </nav>

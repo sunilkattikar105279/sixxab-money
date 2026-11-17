@@ -26,7 +26,7 @@ export async function JoinHero() {
         </ul>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
           <JoinButton label={left > 0 ? 'Claim my free founding spot' : 'Join free'} />
-          <Link href="/ask?q=How%20do%20I%20start%20an%20emergency%20fund%3F" className="btn btn-line">Try the coach first</Link>
+          <Link href="/ask?q=How%20do%20I%20start%20an%20emergency%20fund%3F" className="btn btn-line">Try Mentor first</Link>
         </div>
         <p className="dim" style={{ margin: 0, fontSize: 12 }}>Free, no card. Founding members keep free access for good. Education, not investment advice.</p>
       </div>

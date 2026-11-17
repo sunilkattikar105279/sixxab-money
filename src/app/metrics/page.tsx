@@ -28,7 +28,7 @@ export default async function MetricsPage() {
     <>
       <Header active="" />
       <main className="wrap" id="main">
-        <section className="bar"><span className="tag teal">Open metrics</span><span style={{ flex: '1 1 480px' }}>We publish our numbers and every setup&apos;s outcome, wins and losses, so you can judge the coach on its record.</span></section>
+        <section className="bar"><span className="tag teal">Open metrics</span><span style={{ flex: '1 1 480px' }}>We publish our numbers and every setup&apos;s outcome, wins and losses, so you can judge Quant on its record.</span></section>
         {m ? (
           <section className="grid" aria-label="Community">
             {tile('Members', m.members, `+${m.members_7d} this week`)}

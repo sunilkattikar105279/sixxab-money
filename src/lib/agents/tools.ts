@@ -84,12 +84,12 @@ export async function runTool(name: string, input: Record<string, unknown>, opts
       if (!latest) return { data: { error: 'no setups yet' }, sources: [] };
       const { data } = await db.from('screener_setups').select('symbol, side, entry, stop, target, rr, with_trend, timeframe, reasons, score').eq('market', market).eq('as_of', latest.as_of).eq('mode', String(input.mode)).order('score', { ascending: false }).limit(10);
       const rows = levelsAllowed(market) ? data : (data ?? []).map(({ symbol, side, timeframe, reasons, score }) => ({ symbol, side, timeframe, reasons, score }));
-      return { data: { asOf: latest.as_of, setups: rows }, sources: [{ name: 'SIXXAB screener', asOf: latest.as_of }] };
+      return { data: { asOf: latest.as_of, setups: rows }, sources: [{ name: 'Quant (SIXXAB screener)', asOf: latest.as_of }] };
     }
     case 'get_latest_brief': {
       const db = adminClient(); if (!db) return { data: { error: 'database not configured' }, sources: [] };
       const { data } = await db.from('briefs').select('text, created_at').eq('market', 'US').order('created_at', { ascending: false }).limit(1).maybeSingle();
-      return { data: data ?? { error: 'no brief yet' }, sources: data ? [{ name: 'SIXXAB daily brief', asOf: String(data.created_at).slice(0, 10) }] : [] };
+      return { data: data ?? { error: 'no brief yet' }, sources: data ? [{ name: 'Tape (SIXXAB daily brief)', asOf: String(data.created_at).slice(0, 10) }] : [] };
     }
     case 'get_policy_briefs': {
       const db = adminClient(); if (!db) return { data: { error: 'database not configured' }, sources: [] };

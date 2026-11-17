@@ -19,7 +19,7 @@ export default async function Sectors({ searchParams }: { searchParams: Promise<
       <main className="wrap" id="main">
         <section className="card">
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
-            <div><div className="tag teal">Sector rotation</div><h1 style={{ fontSize: 26, margin: '6px 0' }}>Where money is moving</h1></div>
+            <div><div className="tag teal">Delta · Sector rotation agent</div><h1 style={{ fontSize: 26, margin: '6px 0' }}>Where money is moving</h1></div>
             <nav aria-label="Market" style={{ display: 'flex', gap: 8 }}>{(['US', 'IN'] as const).map((x) => <Link key={x} href={x === 'US' ? '/sectors' : '/sectors?m=IN'} className={`btn ${x === market ? 'btn-gold' : 'btn-line'}`} aria-current={x === market ? 'true' : undefined}>{x === 'US' ? 'US sectors' : 'India (Nifty) sectors'}</Link>)}</nav>
           </div>
           {rot ? <>

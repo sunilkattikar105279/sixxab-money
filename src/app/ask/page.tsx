@@ -24,10 +24,10 @@ export default async function Ask({ searchParams }: { searchParams: Promise<{ q?
                 </Link></li>
               ))}
             </ul>
-            <p className="dim" style={{ margin: '8px 0 0', fontSize: 13 }}>Or ask the coach below.</p>
+            <p className="dim" style={{ margin: '8px 0 0', fontSize: 13 }}>Or ask Mentor below.</p>
           </section>
         )}
-        <AgentAsk title="Ask SIXXAB Money" initial={query || undefined} autoRun={!!query && (isQuestion(query) || !!ask || hits.length === 0)} suggestions={['Why did the market move today?', 'What does a Fed rate cut mean for my mortgage?', 'Explain an index fund like I’m 12']} />
+        <AgentAsk title="Ask Mentor" initial={query || undefined} autoRun={!!query && (isQuestion(query) || !!ask || hits.length === 0)} suggestions={['Why did the market move today?', 'What does a Fed rate cut mean for my mortgage?', 'Explain an index fund like I’m 12']} />
         <Footer note="Answers pass the guardrail agent: sources, both sides on politics, no buy/sell calls" />
       </main>
     </>

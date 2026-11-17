@@ -35,7 +35,7 @@ export default async function Stock({ params }: { params: Promise<{ market: stri
       <main className="wrap" id="main">
         <section className="card" style={{ display: 'flex', flexWrap: 'wrap', gap: 20, alignItems: 'center' }}>
           <div style={{ flex: '1 1 300px' }}><div className="tag dim">{row.sector} · {market} · {row.as_of}</div><h1 style={{ fontSize: 30 }}>{row.symbol} <span className="muted" style={{ fontSize: 18 }}>{row.name}</span></h1><div className="big">{n(t.price)} <span className={t.changePct !== null && t.changePct >= 0 ? 'green' : 'red'} style={{ fontSize: 18 }}>{t.changePct !== null ? `${t.changePct >= 0 ? '+' : ''}${t.changePct.toFixed(2)}%` : ''}</span></div></div>
-          <div style={{ textAlign: 'center' }}><div className="tag dim">SIXXAB score</div><div style={{ font: '700 48px var(--head)', color: row.composite >= 7 ? 'var(--green)' : row.composite <= 4 ? 'var(--red)' : 'var(--gold)' }}>{Number(row.composite).toFixed(1)}</div><div className="muted">{row.bias}</div></div>
+          <div style={{ textAlign: 'center' }}><div className="tag dim">Quant score</div><div style={{ font: '700 48px var(--head)', color: row.composite >= 7 ? 'var(--green)' : row.composite <= 4 ? 'var(--red)' : 'var(--gold)' }}>{Number(row.composite).toFixed(1)}</div><div className="muted">{row.bias}</div></div>
         </section>
         <section className="grid">{factors.map((f) => <div key={f.key} className="card"><div className="tag dim">{f.label}</div><div style={{ font: '700 24px var(--head)', color: '#fff' }}>{f.score.toFixed(1)}</div><div className="muted" style={{ fontSize: 13 }}>{f.why}</div></div>)}</section>
         <div className="cols">
@@ -55,7 +55,7 @@ export default async function Stock({ params }: { params: Promise<{ market: stri
             </section>
           </div>
           <aside className="side">
-            <section className="card" style={{ borderColor: 'var(--gold)' }}><h2 style={{ marginBottom: 8 }}>What to watch</h2>
+            <section className="card" style={{ borderColor: 'var(--gold)' }}><h2 style={{ marginBottom: 8 }}>Pivot · What to watch</h2>
               {(market === 'US' || market === 'IN') && <div style={{ marginBottom: 6 }}><RiskMeter r={await getRegime(market)} compact /></div>}
               <ul style={{ margin: 0, paddingLeft: 18, fontSize: 14 }}>
                 <li>Trend: weekly {t.trends.w}, daily {t.trends.d}{t.trends.w !== t.trends.d ? ' (timeframes disagree: wait for them to line up)' : ''}</li>
@@ -67,12 +67,12 @@ export default async function Stock({ params }: { params: Promise<{ market: stri
               {showLevels && !member && <div style={{ marginTop: 8 }}><JoinPrompt what="The exact levels that confirm or cancel this read" from={here} /></div>}
               <p className="dim" style={{ margin: '6px 0 0', fontSize: 12 }}>Scenarios for learning, not a recommendation.</p>
             </section>
-            <section className="card"><h2 style={{ marginBottom: 8 }}>Market cycle (Wyckoff read)</h2>
+            <section className="card"><h2 style={{ marginBottom: 8 }}>Pivot · Market cycle (Wyckoff)</h2>
               <p style={{ margin: 0 }}><b>Weekly:</b> {t.cycle.weekly.phase} <span className="dim">({t.cycle.weekly.confidence})</span></p>
               <p style={{ margin: '4px 0' }}><b>Daily:</b> {t.cycle.daily.phase} <span className="dim">({t.cycle.daily.confidence})</span></p>
               <ul className="muted" style={{ margin: 0, paddingLeft: 18, fontSize: 13 }}>{[...t.cycle.weekly.notes, ...t.cycle.daily.notes].map((x, i) => <li key={i}>{x}</li>)}</ul>
             </section>
-            <section className="card"><h2 style={{ marginBottom: 8 }}>Elliott wave read</h2>
+            <section className="card"><h2 style={{ marginBottom: 8 }}>Pivot · Elliott wave</h2>
               {t.waves.summary ? <p style={{ margin: 0 }}>{detail ? t.waves.summary : t.waves.summary.replace(/\d[\d,.]*/g, '·').replace(/wave ·/g, `wave ${t.waves.wave ?? ''}`)}</p>
                 : <p style={{ margin: 0 }}>{t.waves.pattern === 'none' ? 'No clear count' : `${t.waves.pattern}${t.waves.wave ? `, wave ${t.waves.wave}` : ''}`}</p>}
               <p className="dim" style={{ margin: '4px 0 0', fontSize: 13 }}>{t.waves.confidence} confidence{t.waves.score != null ? ` · fit ${t.waves.score}/100` : ''}{t.waves.degree ? ` · ${t.waves.degree}` : ''}</p>
