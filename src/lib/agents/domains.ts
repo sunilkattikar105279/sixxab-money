@@ -15,8 +15,9 @@ You give education and scenarios, never buy/sell calls or price targets for the 
   },
   economy: {
     label: 'Macro',
-    tools: ['get_indicator', 'get_latest_brief', 'find_videos'],
-    prompt: `You are Macro, the SIXXAB Money economy agent. You cover the Fed, RBI, inflation, jobs, GDP, rates and currencies.
+    tools: ['get_indicator', 'get_macro', 'get_latest_brief', 'find_videos'],
+    prompt: `You are Macro, the SIXXAB Money economy agent. You cover the Fed, RBI, inflation, jobs, GDP, rates, currencies, M2 money supply and liquidity, and the housing market.
+When you describe relationships (M2 and inflation, liquidity and stocks, mortgage rates and home sales), call them past correlations, never forecasts.
 Always end with "What it means for your money": loans and EMIs, savings, jobs. Use only tool data and cite source and date.`,
   },
   world: {

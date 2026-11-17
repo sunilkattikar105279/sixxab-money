@@ -5,6 +5,8 @@ import { getIndicator, INDICATORS, GROUPS } from '@/lib/data/fred';
 import { VideoRail } from '@/components/VideoRail';
 import { videos } from '@/lib/media';
 import { adminClient } from '@/lib/supabase/admin';
+import { macroSnapshot } from '@/lib/data/macro';
+import { TileGrid, RelationChart } from '@/components/MacroCharts';
 
 export const revalidate = 3600;
 
@@ -31,10 +33,11 @@ export default async function Economy({ searchParams }: { searchParams: Promise<
   const country = c === 'IN' || c === 'GLOBAL' ? c : 'US';
   const keys = GROUPS[country];
   const db = adminClient();
-  const [values, clips, events] = await Promise.all([
+  const [values, clips, events, macro] = await Promise.all([
     Promise.all(keys.map((k) => getIndicator(k))),
     videos({ topic: 'economy', limit: 4 }),
     db ? db.from('econ_events').select('event_date, event, why, source').eq('country', country).gte('event_date', new Date().toISOString().slice(0, 10)).order('event_date').limit(8).then((r) => r.data ?? []) : Promise.resolve([]),
+    country === 'US' ? macroSnapshot() : Promise.resolve(null),
   ]);
   return (
     <>
@@ -64,6 +67,30 @@ export default async function Economy({ searchParams }: { searchParams: Promise<
             </article>
           ))}
         </section>
+        {macro?.available && <>
+          <section aria-label="Recession watch" className="card" style={{ borderColor: macro.watch.flags.length >= 2 ? 'var(--red)' : macro.watch.flags.length ? 'var(--gold)' : 'var(--line2)' }}>
+            <div className="tag teal">Macro · Recession watch</div>
+            <h2 style={{ margin: '6px 0 4px' }}>{macro.watch.read}</h2>
+            {macro.watch.flags.length > 0 ? <ul style={{ margin: 0, paddingLeft: 18 }}>{macro.watch.flags.map((f) => <li key={f}>{f}</li>)}</ul> : <p className="muted" style={{ margin: 0 }}>Yield curve, jobless claims, the unemployment trend (Sahm rule) and credit spreads are all outside warning levels.</p>}
+          </section>
+
+          <h2 id="money">Money supply and liquidity (M2)</h2>
+          <TileGrid tiles={macro.money} />
+          {macro.relations.length > 0 && <section className="card" aria-label="How money supply relates to inflation and stocks">
+            <h2 style={{ marginBottom: 4 }}>How M2 relates to inflation and stocks</h2>
+            <p className="muted" style={{ margin: '0 0 8px', fontSize: 14 }}>Correlation (r) runs from −1 to +1: past relationships, not a forecast. Lines are on their own scales so the shapes can be compared.</p>
+            <div style={{ display: 'grid', gap: 18 }}>{macro.relations.map((r) => <div key={r.title}><h3 style={{ margin: '0 0 4px' }}>{r.title}</h3><RelationChart rel={r} /><p style={{ margin: '4px 0 0', fontSize: 14 }}>{r.read}</p></div>)}</div>
+          </section>}
+
+          <h2 id="housing">Housing market</h2>
+          {macro.housingRead && <p className="muted" style={{ margin: 0 }}>{macro.housingRead}</p>}
+          <TileGrid tiles={macro.housing} />
+          {macro.housingRelation && <section className="card" aria-label={macro.housingRelation.title}><h2 style={{ marginBottom: 4 }}>{macro.housingRelation.title}</h2><RelationChart rel={macro.housingRelation} /><p style={{ margin: '4px 0 0', fontSize: 14 }}>{macro.housingRelation.read}</p></section>}
+
+          <h2 id="dashboard">Economy dashboard</h2>
+          <TileGrid tiles={macro.economy} />
+          <p className="dim" style={{ margin: 0, fontSize: 12 }}>Source: FRED, Federal Reserve Bank of St. Louis (M2SL, M2REAL, M2V, WALCL, RRPONTSYD, WTREGEN, SP500, CPIAUCSL, PCEPILFE, PAYEMS, UNRATE, ICSA, RSAFS, INDPRO, UMCSENT, DFF, T10Y2Y, BAMLH0A0HYM2, MORTGAGE30US, CSUSHPINSA, MSPUS, HOUST, PERMIT, EXHOSLUSM495S, MSACSR). Educational, not a forecast.</p>
+        </>}
         <div className="cols">
           <section className="card main scroll" aria-label="Calendar">
             <h2 style={{ marginBottom: 8 }}>Coming up</h2>
@@ -82,7 +109,7 @@ export default async function Economy({ searchParams }: { searchParams: Promise<
           </aside>
         </div>
         <VideoRail title="Economy explained in 60 seconds" items={clips} />
-        <AgentAsk title="Ask the economy agent" suggestions={['What does a Fed cut mean for my mortgage?', 'How does an RBI repo-rate change affect my home loan EMI?', 'Is inflation eating my fixed deposit?']} />
+        <AgentAsk title="Ask Macro" suggestions={['How does M2 money supply affect inflation and stocks?', 'Is now a good time to buy a home with these mortgage rates?', 'What does a Fed cut mean for my mortgage?', 'How does an RBI repo-rate change affect my home loan EMI?', 'Is inflation eating my fixed deposit?']} />
         <Footer note="Data: FRED (Federal Reserve Bank of St. Louis) · India RBI and MOSPI connectors in progress" />
       </main>
     </>

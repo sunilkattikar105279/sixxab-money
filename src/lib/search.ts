@@ -14,7 +14,10 @@ const POLICY: { words: RegExp; topic: string }[] = [
   { words: /\b(antitrust|merger|acquisition|regulation|sebi|sec rule|ipo)\b/i, topic: 'Corporate' },
 ];
 
-const ECONOMY: { words: RegExp; c: 'US' | 'IN' | 'GLOBAL'; label: string }[] = [
+const ECONOMY: { words: RegExp; c: 'US' | 'IN' | 'GLOBAL'; label: string; hash?: string }[] = [
+  { words: /\b(m2|money supply|liquidity|balance sheet|qt|quantitative)\b/i, c: 'US', label: 'M2 money supply and liquidity', hash: '#money' },
+  { words: /\b(housing|home prices?|mortgages?|case[- ]shiller|housing starts|home sales|real estate market)\b/i, c: 'US', label: 'US housing market', hash: '#housing' },
+  { words: /\b(recession|yield curve|jobless claims|sahm)\b/i, c: 'US', label: 'Recession watch', hash: '#dashboard' },
   { words: /\b(india|indian)\b.*\b(inflation|cpi|gdp|jobs|unemployment|economy|wpi|iip)\b|\b(inflation|cpi|gdp|economy)\b.*\bindia\b/i, c: 'IN', label: 'India economy' },
   { words: /\b(inflation|cpi|pce|gdp|jobs report|payrolls|nfp|unemployment|jobless|retail sales|yields?|treasur(y|ies)|economy|recession)\b/i, c: 'US', label: 'US economy' },
 ];
@@ -56,7 +59,7 @@ export function search(raw: string): Hit[] {
     add({ kind: 'country', label: `${c.name} market`, href: c.code === 'IN' ? '/economy?c=IN' : '/maps', hint: `country ETF ${c.etf}` });
   }
   for (const p of POLICY) if (p.words.test(q)) add({ kind: 'policy', label: `${p.topic} briefs`, href: `/world?t=${encodeURIComponent(p.topic)}`, hint: 'World & Policy' });
-  for (const e of ECONOMY) if (e.words.test(q)) { add({ kind: 'economy', label: e.label, href: `/economy?c=${e.c}`, hint: 'Economy dashboard' }); break; }
+  for (const e of ECONOMY) if (e.words.test(q)) { add({ kind: 'economy', label: e.label, href: `/economy?c=${e.c}${e.hash ?? ''}`, hint: 'Macro · Economy' }); break; }
   for (const p of PAGES) if (p.words.test(q)) add({ kind: 'page', label: p.label, href: p.href });
   return hits.slice(0, 8);
 }

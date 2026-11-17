@@ -1,6 +1,7 @@
 import type Anthropic from '@anthropic-ai/sdk';
 import { getIndicator, INDICATORS } from '../data/fred';
 import { getSnapshot } from '../data/market';
+import { macroSnapshot, macroBrief } from '../data/macro';
 import { adminClient } from '../supabase/admin';
 import { searchVideos } from '../media';
 import { levelsAllowed } from '../compliance';
@@ -31,6 +32,11 @@ const ALL: Record<string, Anthropic.Tool> = {
     name: 'get_screener_setups',
     description: 'Current screener setups for a market and mode (invest = investment & swing, day = day trades, quick = quick trades), best scores first.',
     input_schema: { type: 'object', properties: { market: { type: 'string', enum: ['US', 'IN', 'GLOBAL'] }, mode: { type: 'string', enum: ['invest', 'day', 'quick'] } }, required: ['market', 'mode'] },
+  },
+  get_macro: {
+    name: 'get_macro',
+    description: 'US money supply (M2, real M2, velocity, Fed balance sheet, net liquidity), housing (mortgage rate, payment on a median home, prices, sales, starts, supply), the economy dashboard (inflation, jobs, claims, retail sales, sentiment, yield curve, credit spreads), recession watch and the M2, inflation and stocks relationships. From FRED.',
+    input_schema: { type: 'object', properties: {} },
   },
   get_latest_brief: {
     name: 'get_latest_brief',
@@ -67,6 +73,10 @@ export async function runTool(name: string, input: Record<string, unknown>, opts
     case 'get_indicator': {
       const v = await getIndicator(String(input.key));
       return { data: v, sources: v ? [{ name: `FRED ${v.seriesId}`, asOf: v.date }] : [] };
+    }
+    case 'get_macro': {
+      const snap = await macroSnapshot();
+      return { data: snap.available ? macroBrief(snap) : { error: 'FRED key not configured' }, sources: snap.available ? [{ name: 'FRED (Federal Reserve Bank of St. Louis)' }] : [] };
     }
     case 'get_stock_analysis': {
       const db = adminClient(); if (!db) return { data: { error: 'database not configured' }, sources: [] };
