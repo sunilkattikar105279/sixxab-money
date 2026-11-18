@@ -34,7 +34,7 @@ async function main() {
   let lastBar = 0;
   for (const p of INDEX_PROXIES[market]) {
     const b = await getBars(market, p.symbol, '1d', 10);
-    if (b.length >= 2) { const l = b.at(-1)!, pr = b.at(-2)!; lastBar = Math.max(lastBar, l.t); indices.push({ name: p.name, value: l.c, change: l.c - pr.c, changePct: ((l.c - pr.c) / pr.c) * 100 }); }
+    if (b.length >= 2 && !(p.name === 'India VIX' && b.at(-1)!.c === b.at(-2)!.c)) { const l = b.at(-1)!, pr = b.at(-2)!; lastBar = Math.max(lastBar, l.t); indices.push({ name: p.name, value: l.c, change: l.c - pr.c, changePct: ((l.c - pr.c) / pr.c) * 100 }); }
     if (market === 'GLOBAL') await new Promise((r) => setTimeout(r, 8000));
   }
   // Date the run by the latest session it covers (market-local), not the clock: a run GitHub starts late
