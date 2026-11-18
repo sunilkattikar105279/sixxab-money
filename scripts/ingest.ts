@@ -29,12 +29,17 @@ async function main() {
 
   // Index snapshot
   const indices = [];
+  let lastBar = 0;
   for (const p of INDEX_PROXIES[market]) {
     const b = await getBars(market, p.symbol, '1d', 10);
-    if (b.length >= 2) { const l = b.at(-1)!, pr = b.at(-2)!; indices.push({ name: p.name, value: l.c, change: l.c - pr.c, changePct: ((l.c - pr.c) / pr.c) * 100 }); }
+    if (b.length >= 2) { const l = b.at(-1)!, pr = b.at(-2)!; lastBar = Math.max(lastBar, l.t); indices.push({ name: p.name, value: l.c, change: l.c - pr.c, changePct: ((l.c - pr.c) / pr.c) * 100 }); }
     if (market === 'GLOBAL') await new Promise((r) => setTimeout(r, 8000));
   }
-  const asOf = new Date().toISOString().slice(0, 10);
+  // Date the run by the latest session it covers (market-local), not the clock: a run GitHub starts late
+  // (after midnight UTC) must still file yesterday's close under yesterday's date.
+  const tz = market === 'IN' ? 'Asia/Kolkata' : 'America/New_York';
+  const asOf = new Intl.DateTimeFormat('en-CA', { timeZone: tz }).format(lastBar ? new Date(lastBar) : new Date());
+  console.log(`${market}: session ${asOf} via ${source}, ${indices.length} indexes`);
   if (indices.length) await db.from('market_snapshots').upsert({ market, as_of: asOf, source, indices }, { onConflict: 'market,as_of' });
 
   // Market risk meter: VIX (CBOE) with SPY volume for the US; India VIX with Nifty for India (needs the Upstox feed)
