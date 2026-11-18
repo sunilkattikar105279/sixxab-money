@@ -18,10 +18,10 @@ import { TopPromos, BriefMini } from '@/components/TopPromos';
 
 export const revalidate = 300;
 
-async function latestBrief(): Promise<string | null> {
+async function latestBrief(market: 'US' | 'IN'): Promise<string | null> {
   const db = adminClient();
   if (!db) return null;
-  const { data } = await db.from('briefs').select('text').eq('market', 'US').order('created_at', { ascending: false }).limit(1).maybeSingle();
+  const { data } = await db.from('briefs').select('text').eq('market', market).order('created_at', { ascending: false }).limit(1).maybeSingle();
   return data?.text ?? null;
 }
 
@@ -39,7 +39,7 @@ const sign = (v: number | null) => (v === null ? '' : v > 0 ? '+' : v < 0 ? '−
 export default async function Home({ searchParams }: { searchParams: Promise<{ m?: string }> }) {
   const { m } = await searchParams;
   const market: Market = m === 'IN' || m === 'GLOBAL' ? m : 'US';
-  const [snap, brief, board, briefs] = await Promise.all([getSnapshot(market), market === 'US' ? latestBrief() : Promise.resolve(null), getStocks(market), videos({ topic: 'daily-brief', limit: 1 })]);
+  const [snap, brief, board, briefs, briefIN] = await Promise.all([getSnapshot(market), latestBrief('US'), getStocks(market), videos({ topic: 'daily-brief', limit: 1 }), latestBrief('IN')]);
   const [breadth, briefsList, regime] = await Promise.all([getBreadth(market, board), policyBriefs(undefined, 3), market === 'GLOBAL' ? Promise.resolve(null) : getRegime(market)]);
   const journey = await memberJourney();
   const [today] = briefs;
@@ -56,8 +56,11 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ m
         <BriefMini brief={today} />
 
         <section className="bar" aria-label="Agent brief">
-          <span className="tag teal">Agent brief{snap.asOf ? ` · ${snap.asOf}` : ''}</span>
-          <span style={{ flex: '1 1 480px' }}>{brief ?? fallbackBrief}</span>
+          <span className="tag teal">Tape · agent brief</span>
+          <span style={{ flex: '1 1 480px', display: 'grid', gap: 4 }}>
+            <span>{brief ?? fallbackBrief}</span>
+            {briefIN && <span className="muted">{briefIN}</span>}
+          </span>
           <Link href="/ask?q=Why%20did%20the%20market%20move%20today%3F" style={{ fontWeight: 600 }}>Why? Ask the agent</Link>
         </section>
 

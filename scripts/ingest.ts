@@ -41,7 +41,7 @@ async function main() {
   // (after midnight UTC) must still file yesterday's close under yesterday's date.
   const tz = market === 'IN' ? 'Asia/Kolkata' : 'America/New_York';
   const asOf = new Intl.DateTimeFormat('en-CA', { timeZone: tz }).format(lastBar ? new Date(lastBar) : new Date());
-  console.log(`${market}: session ${asOf} via ${source}, ${indices.length} indexes`);
+  console.log(`${market}: session ${asOf} via ${source}, ${indices.length} indexes: ${indices.map((q) => `${q.name} ${q.value.toFixed(2)} (${q.changePct >= 0 ? '+' : ''}${q.changePct.toFixed(2)}%)`).join(' · ')}`);
   if (indices.length) await db.from('market_snapshots').upsert({ market, as_of: asOf, source, indices }, { onConflict: 'market,as_of' });
 
   // Market risk meter: VIX (CBOE) with SPY volume for the US; India VIX with Nifty for India (needs the Upstox feed)
@@ -53,7 +53,10 @@ async function main() {
     } else if (market === 'IN' && providerConfigured('IN')) {
       const [iv, nifty] = await Promise.all([getBars('IN', 'NSE_INDEX|India VIX', '1d', 400), getBars('IN', 'NSE_INDEX|Nifty 50', '1d', 400)]);
       const gauge: Point[] = iv.map((b) => ({ date: new Date(b.t).toISOString().slice(0, 10), value: b.c }));
-      regime = readRegime({ market: 'IN', gauge, index: nifty });
+      const lastG = gauge.at(-1)?.date ?? '';
+      // The free feed sometimes lags on India VIX: never file an old reading under today's session
+      if (lastG && (Date.parse(asOf) - Date.parse(lastG)) / 86_400_000 > 1) console.warn(`IN risk meter skipped: India VIX feed is stale (last ${lastG}, session ${asOf})`);
+      else regime = readRegime({ market: 'IN', gauge, index: nifty });
     }
     if (regime) {
       const { error } = await db.from('market_regime').upsert({ market, as_of: regime.asOf, zone: regime.zone, level: regime.level, data: regime }, { onConflict: 'market,as_of' });
@@ -124,6 +127,23 @@ async function main() {
       }
     }
   } catch (e) { console.warn(`rotation skipped: ${e instanceof Error ? e.message : e}`); }
+  // Tape · nightly agent brief for the home page (plain facts from this run, no model call needed)
+  if (market !== 'GLOBAL' && indices.length) {
+    try {
+      const pct = (v: number) => `${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(2)}%`;
+      const day = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'short', day: 'numeric', timeZone: 'UTC' }).format(new Date(asOf + 'T12:00:00Z'));
+      const idx = indices.filter((q) => q.name !== 'India VIX').map((q) => `${q.name.replace(/ \(.*\)$/, '')} ${pct(q.changePct)}`).join(', ');
+      const { data: rotRow } = await db.from('sector_rotation').select('data').eq('market', market).order('as_of', { ascending: false }).limit(1).maybeSingle();
+      const lead = ((rotRow?.data as { sectors?: { name: string; quadrant: string }[] } | null)?.sectors ?? []).filter((x) => x.quadrant === 'leading').slice(0, 2).map((x) => x.name);
+      const parts = [`${market === 'US' ? 'US' : 'India'} close, ${day}: ${idx}.`];
+      if (regime) parts.push(`Sigma: ${regime.gauge} ${regime.level.toFixed(1)} (${regime.zone})${regime.breadth ? `; ${regime.breadth.pctAbove200}% of tracked stocks are above their 200-day average` : ''}.`);
+      if (lead.length) parts.push(`Delta: ${lead.join(' and ')} lead.`);
+      const text = parts.join(' ');
+      await db.from('briefs').delete().eq('market', market).gte('created_at', new Date(Date.now() - 20 * 3_600_000).toISOString()).like('text', `${market === 'US' ? 'US' : 'India'} close, %`);
+      const { error } = await db.from('briefs').insert({ market, text, sources: [{ title: source }] });
+      console.log(`${market} agent brief: ${text}${error ? ` (not stored: ${error.message})` : ''}`);
+    } catch (e) { console.warn(`agent brief skipped: ${e instanceof Error ? e.message : e}`); }
+  }
   console.log(`${market}: ${rows.length} stocks analysed, ${setups.length} setups, ${indices.length} index proxies.`);
 
   // Grow money: run members' auto-trade strategies on today's setups and closing prices (paper accounts).
