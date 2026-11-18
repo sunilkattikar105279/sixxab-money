@@ -43,7 +43,7 @@ export async function TopPromos() {
         <Card gold tag="Mentor · Money coach" title="Your personal money coach"
           points={['A 90-day plan built around your goal', 'A 6-stage journey from age 11 to legacy', left > 0 ? `${left} of ${FOUNDING_SPOTS} free founding spots left` : 'Private: no ads, data never sold']}
           actions={<><JoinButton label={left > 0 ? 'Claim my free spot' : 'Join free'} /><Link href="/ask?q=How%20do%20I%20start%20an%20emergency%20fund%3F" className="btn btn-line">Try Mentor</Link></>} video={promo('coach')}>
-        <div className="mini-rows">{['Startup', 'Struggle', 'Scale', 'Success', 'Significance', 'SIXXAB'].map((n, i) => <div key={n}><span>{i + 1} · {n}</span><span className="mono dim" style={{ fontSize: 11 }}>{member && member.stage === i + 1 ? 'You are here' : ''}</span></div>)}</div>
+        <div className="mini-rows">{['Startup', 'Struggle', 'Scale', 'Success', 'Significance', 'SIXXAB'].map((n, i) => <div key={n}><span>{i + 1} · {n}</span><span className="mono dim" style={{ fontSize: 11 }}>{i === 0 ? 'Start here' : ''}</span></div>)}</div>
       </Card>
       )}
       <Card tag="Quant · Screener" title="Stocks worth a closer look"
