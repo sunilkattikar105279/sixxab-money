@@ -14,7 +14,7 @@ function Card({ tag, title, points, children, actions, video, gold }: { tag: str
       <h2 style={{ margin: 0 }}>{title}</h2>
       <ul className="hero-points" style={{ fontSize: 14 }}>{points.map((p) => <li key={p}>{p}</li>)}</ul>
       <div className="promo-body">
-        {video && <video className="promo-video" src={video.url} poster={video.poster} controls playsInline preload="none" aria-label={video.title} />}
+        {video && <video className="promo-video" src={video.url} poster={video.poster} controls autoPlay muted loop playsInline preload="metadata" aria-label={video.title} />}
         {children && <div className="promo-preview">{children}</div>}
       </div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 'auto' }}>{actions}</div>

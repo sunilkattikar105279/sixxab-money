@@ -10,6 +10,7 @@ const csp = [
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com data:",
   "img-src 'self' data: blob: https:",
+  "media-src 'self' blob: https://media.viewmax.io",
   "frame-src https://www.instagram.com",
   "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.instagram.com https://vitals.vercel-insights.com",
   "object-src 'none'",
