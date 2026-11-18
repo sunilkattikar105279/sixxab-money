@@ -153,3 +153,7 @@ input[type='range'] { accent-color: var(--teal); min-height: 28px; padding: 0; b
 .trend-chips span { border: 1px solid; border-radius: 999px; padding: 2px 9px; font: 600 11px var(--mono, monospace); }
 .pivot-scen { margin: 0; padding-left: 18px; font-size: 13px; display: grid; gap: 4px; }
 .pivot-scen li.bull::marker { color: #2EE59D; } .pivot-scen li.bear::marker { color: #FF5C7A; }
+
+.promo-body { display: flex; gap: 12px; align-items: stretch; }
+.promo-body .promo-preview { flex: 1; }
+.promo-video { flex: 0 0 120px; width: 120px; aspect-ratio: 9 / 16; border-radius: 10px; background: #000; object-fit: cover; border: 1px solid var(--line2); }

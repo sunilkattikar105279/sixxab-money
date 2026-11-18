@@ -4,20 +4,20 @@ import { stageOf } from '@/lib/sixs';
 import { foundingStats } from '@/lib/growth-server';
 import { FOUNDING_SPOTS } from '@/lib/growth';
 import { getRotation } from '@/lib/data/rotation';
-import { PROMOS, type Video } from '@/lib/media';
+import { PROMOS, type Video, type Promo } from '@/lib/media';
 import { JoinButton } from './JoinButton';
 
-function Card({ tag, title, points, children, actions, video, gold }: { tag: string; title: string; points: string[]; children?: React.ReactNode; actions: React.ReactNode; video?: string; gold?: boolean }) {
+function Card({ tag, title, points, children, actions, video, gold }: { tag: string; title: string; points: string[]; children?: React.ReactNode; actions: React.ReactNode; video?: Promo; gold?: boolean }) {
   return (
     <article className={`card promo-card${gold ? ' promo-gold' : ''}`}>
       <div className={`tag ${gold ? 'gold' : 'teal'}`}>{tag}</div>
       <h2 style={{ margin: 0 }}>{title}</h2>
       <ul className="hero-points" style={{ fontSize: 14 }}>{points.map((p) => <li key={p}>{p}</li>)}</ul>
-      {children && <div className="promo-preview">{children}</div>}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 'auto' }}>
-        {actions}
-        {video && <a href={video} target="_blank" rel="noopener noreferrer" className="btn btn-line">▶ 30-sec tour</a>}
+      <div className="promo-body">
+        {video && <video className="promo-video" src={video.url} poster={video.poster} controls playsInline preload="none" aria-label={video.title} />}
+        {children && <div className="promo-preview">{children}</div>}
       </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 'auto' }}>{actions}</div>
     </article>
   );
 }
@@ -25,7 +25,7 @@ function Card({ tag, title, points, children, actions, video, gold }: { tag: str
 /** The three headline promos: personal money coach, Quant screener, Delta money-move manager. */
 export async function TopPromos() {
   const [m, stats, rot] = await Promise.all([getMember(), foundingStats(), getRotation('US')]);
-  const promo = (id: string) => PROMOS.find((p) => p.id === id)?.url;
+  const promo = (id: Promo['id']) => PROMOS.find((p) => p.id === id);
   const member = m?.member ?? null;
   const left = stats?.left ?? FOUNDING_SPOTS;
   const leaders = (rot?.sectors ?? []).filter((s) => s.quadrant === 'leading').slice(0, 2);

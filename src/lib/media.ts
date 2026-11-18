@@ -29,8 +29,12 @@ export const LIBRARY: Video[] = [
 ];
 
 /** Agent promo reels linked from the home page cards (ids 'quant' and 'delta'); add an entry once each promo is posted. */
-export interface Promo { id: string; url: string; title: string; href: string; cta: string }
-export const PROMOS: Promo[] = [];
+export interface Promo { id: 'coach' | 'quant' | 'delta'; url: string; poster: string; title: string }
+const VM = 'https://media.viewmax.io/users/5CsPXUOC6B2P2tCfo9UCiuCFJXw4Limz/sora-videos/';
+export const PROMOS: Promo[] = [
+  { id: 'quant', url: `${VM}cgt-20261118210145-dmias/dd4b90ba-1d0d-473b-98db-93dd6c2525a3.mp4`, poster: `${VM}cgt-20261118210145-dmias/091220dd-b264-479d-8162-1bc45c04a435.first.jpg`, title: 'Quant screener in 15 seconds' },
+  { id: 'delta', url: `${VM}cgt-20261118210153-9airt/b287721e-fdc3-4a01-9871-bed223abf654.mp4`, poster: `${VM}cgt-20261118210153-9airt/c9a979b4-04e7-4749-88a5-03276e8d66c5.first.jpg`, title: 'Delta money-move manager in 15 seconds' },
+];
 
 export async function videos(filter: { topic?: VideoTopic; stage?: number; limit?: number } = {}): Promise<Video[]> {
   let list = LIBRARY;
