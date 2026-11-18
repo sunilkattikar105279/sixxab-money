@@ -28,9 +28,9 @@ const r2 = (v: number) => Math.round(v * 100) / 100;
 
 /** Nearest zone of a kind on the given side of price, preferring 4H, then 1H, then daily. */
 function nearest(t: TechReport, kind: 'supply' | 'demand'): PivotRead['supply'] {
-  const p = t.price;
+  const p = t.price, reach = Math.max(3 * t.atrD, p * 0.03); // only zones close enough to act on this week
   const pick = (zs: Zone[], tf: '4H' | '1H' | 'D') => zs
-    .filter((z) => z.kind === kind && (kind === 'supply' ? z.low >= p * 0.995 : z.high <= p * 1.005))
+    .filter((z) => z.kind === kind && (kind === 'supply' ? z.low >= p * 0.995 && z.low - p <= reach : z.high <= p * 1.005 && p - z.high <= reach))
     .sort((a, b) => (kind === 'supply' ? a.low - b.low : b.high - a.high))
     .map((z) => ({ low: r2(z.low), high: r2(z.high), tf }))[0];
   return pick(t.zones.h4 ?? [], '4H') ?? pick(t.zones.h1 ?? [], '1H') ?? pick(t.zones.d ?? [], 'D') ?? null;
