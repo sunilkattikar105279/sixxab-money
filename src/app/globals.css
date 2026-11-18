@@ -130,6 +130,8 @@ input[type='range'] { accent-color: var(--teal); min-height: 28px; padding: 0; b
 /* Clean landing page */
 .promo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
 .promo-card { display: flex; flex-direction: column; gap: 10px; }
+.promo-top { grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); }
+.promo-gold { border-color: var(--gold); background: linear-gradient(135deg, var(--panel) 0%, var(--panel2) 100%); }
 .promo-preview { background: var(--panel2); border: 1px solid var(--line2); border-radius: 10px; padding: 12px; }
 .mini-rows { display: grid; gap: 6px; font-size: 13px; }
 .mini-rows > div { display: flex; justify-content: space-between; gap: 10px; align-items: center; }
