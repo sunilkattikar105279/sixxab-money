@@ -55,8 +55,12 @@ async function main() {
       const gauge: Point[] = iv.map((b) => ({ date: new Date(b.t).toISOString().slice(0, 10), value: b.c }));
       const lastG = gauge.at(-1)?.date ?? '';
       // The free feed sometimes lags on India VIX: never file an old reading under today's session
-      if (lastG && (Date.parse(asOf) - Date.parse(lastG)) / 86_400_000 > 1) console.warn(`IN risk meter skipped: India VIX feed is stale (last ${lastG}, session ${asOf})`);
-      else regime = readRegime({ market: 'IN', gauge, index: nifty });
+      // The free feed sometimes repeats the last India VIX value under new dates: treat 2+ identical trailing closes as stale
+      const tail = gauge.slice(-3).map((p) => p.value), repeated = tail.length >= 2 && tail.at(-1) === tail.at(-2);
+      if ((lastG && (Date.parse(asOf) - Date.parse(lastG)) / 86_400_000 > 1) || repeated) {
+        console.warn(`IN risk meter skipped: India VIX feed looks stale (last ${lastG} = ${tail.at(-1)}, repeated: ${repeated}); keeping the last good reading`);
+        await db.from('market_regime').delete().eq('market', 'IN').gte('as_of', lastG && repeated ? gauge[Math.max(0, gauge.length - 3)].date : asOf);
+      } else regime = readRegime({ market: 'IN', gauge, index: nifty });
     }
     if (regime) {
       const { error } = await db.from('market_regime').upsert({ market, as_of: regime.asOf, zone: regime.zone, level: regime.level, data: regime }, { onConflict: 'market,as_of' });
