@@ -81,7 +81,7 @@ export default async function Home() {
 
   return (
     <>
-      <Header active="Home" market="US" />
+      <Header active="Home" />
       <main className="wrap" id="main">
         {/* 1. Personal finance coach */}
         <CoachCard />
