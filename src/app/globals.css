@@ -127,11 +127,23 @@ input[type='range'] { accent-color: var(--teal); min-height: 28px; padding: 0; b
 .gate-dot { flex: 0 0 8px; height: 8px; border-radius: 50%; margin-top: 4px; border: 1.5px solid var(--gold); }
 .gate-dot.ok { background: #2EE59D; border-color: #2EE59D; }
 .journey .coach { margin-top: auto; padding-top: 6px; font-size: 12px; font-weight: 600; }
-/* Featured daily brief + agent promos */
-.feature { display: grid; grid-template-columns: minmax(260px, 360px) 1fr; gap: 20px; align-items: start; }
-@media (max-width: 760px) { .feature { grid-template-columns: 1fr; } }
-.promo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
-.promo { display: flex; flex-direction: column; gap: 10px; }
+/* Clean landing page */
+.promo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.promo-card { display: flex; flex-direction: column; gap: 10px; }
+.promo-preview { background: var(--panel2); border: 1px solid var(--line2); border-radius: 10px; padding: 12px; }
+.mini-rows { display: grid; gap: 6px; font-size: 13px; }
+.mini-rows > div { display: flex; justify-content: space-between; gap: 10px; align-items: center; }
+.bar-mini { flex: 0 0 45%; height: 6px; border-radius: 3px; background: var(--line2); overflow: hidden; }
+.bar-mini span { display: block; height: 100%; background: var(--teal); }
+.market-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }
+.idx-row { display: grid; grid-template-columns: 1fr auto 72px; gap: 10px; padding: 5px 0; border-bottom: 1px solid var(--line2); font-size: 14px; }
+.idx-row span:not(:first-child) { text-align: right; }
+.gauge { background: var(--panel2); border: 1px solid var(--line2); border-radius: 10px; padding: 10px 12px; }
+.brief-mini { display: flex; gap: 16px; align-items: center; color: var(--text); text-decoration: none; max-width: 560px; }
+.brief-mini:hover { border-color: var(--teal); }
+.brief-thumb { flex: 0 0 64px; height: 112px; border-radius: 10px; position: relative; background: linear-gradient(160deg, #0F2342, #08131F); border: 1.5px solid var(--teal); display: grid; place-items: center; }
+.brief-thumb .play { font-size: 22px; color: #fff; }
+.brief-thumb .thumb-tag { position: absolute; bottom: 6px; left: 0; right: 0; text-align: center; font: 600 7px var(--mono, monospace); color: var(--teal); letter-spacing: 1px; }
 /* Pivot levels */
 .pivot-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 16px; }
 .pivot { display: flex; flex-direction: column; gap: 8px; }

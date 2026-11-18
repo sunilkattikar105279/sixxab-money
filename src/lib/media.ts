@@ -28,7 +28,7 @@ export const LIBRARY: Video[] = [
   { id: 'ai-jobs', url: 'https://www.instagram.com/reel/DfItnOzx5fe/', title: 'AI isn’t taking your job; someone who uses AI is', date: '2026-10-30', topics: ['ai'], account: 'sunil.kattikar' },
 ];
 
-/** Agent promo reels featured on the home page; add an entry once each promo is posted on Instagram. */
+/** Agent promo reels linked from the home page cards (ids 'quant' and 'delta'); add an entry once each promo is posted. */
 export interface Promo { id: string; url: string; title: string; href: string; cta: string }
 export const PROMOS: Promo[] = [];
 

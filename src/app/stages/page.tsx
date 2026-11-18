@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Header, Footer } from '@/components/Header';
 import { StagesPyramid } from '@/components/StagesPyramid';
 import { StageQuiz } from '@/components/StageQuiz';
+import { JourneyPath } from '@/components/JourneyPath';
 import { STAGES } from '@/lib/sixs';
 import { trackFor } from '@/lib/curriculum';
 
@@ -19,6 +20,7 @@ export default function Stages() {
           <p className="muted" style={{ margin: 0 }}>Every stage has one focus and one gate. You climb by building habits and net worth, not by age. Each stage comes with a 12-week track: understand, practise, prove.</p>
           <StagesPyramid />
         </section>
+        <JourneyPath />
         <StageQuiz />
         <section className="grid" aria-label="Stage tracks">
           {STAGES.map((s) => {
