@@ -6,6 +6,8 @@ export type VideoTopic = 'daily-brief' | 'story' | 'economy' | 'markets' | 'habi
 export interface Video { id: string; url: string; title: string; date: string; topics: VideoTopic[]; stages?: number[]; account: 'sixxab_money' | 'sunil.kattikar' }
 
 export const LIBRARY: Video[] = [
+  { id: 'brief-1117', url: 'https://www.instagram.com/reel/Df2EFFXARs7/', title: 'Daily brief: Chips drag the S&P down 1.9%', date: '2026-11-17', topics: ['daily-brief', 'markets'], account: 'sixxab_money' },
+  { id: 'brief-1116', url: 'https://www.instagram.com/reel/DfzfiQPGR8e/', title: 'Daily brief: Best week since August, S&P on its 20-week line', date: '2026-11-16', topics: ['daily-brief', 'markets'], account: 'sixxab_money' },
   { id: 'nvda-story', url: 'https://www.instagram.com/reel/DftD2yqjzwf/', title: 'The Jensen Huang story: wins, falls, mistakes, lessons', date: '2026-11-14', topics: ['story', 'markets'], account: 'sixxab_money' },
   { id: 'brief-1113', url: 'https://www.instagram.com/reel/Dfr_hLKAoOB/', title: 'Daily brief: Nvidia’s CEO quits, S&P slips under its 20-week', date: '2026-11-13', topics: ['daily-brief', 'markets'], account: 'sixxab_money' },
   { id: 'brief-1113b', url: 'https://www.instagram.com/reel/Dfr8Y8hjJk5/', title: 'Nvidia’s CEO quits: the market barely blinks', date: '2026-11-13', topics: ['daily-brief', 'markets'], account: 'sixxab_money' },
@@ -25,6 +27,10 @@ export const LIBRARY: Video[] = [
   { id: 'agent-reel', url: 'https://www.instagram.com/reel/Dfkp3Q5t7v8/', title: 'My last reel posted itself: the agent workflow', date: '2026-11-11', topics: ['ai'], account: 'sunil.kattikar' },
   { id: 'ai-jobs', url: 'https://www.instagram.com/reel/DfItnOzx5fe/', title: 'AI isn’t taking your job; someone who uses AI is', date: '2026-10-30', topics: ['ai'], account: 'sunil.kattikar' },
 ];
+
+/** Agent promo reels featured on the home page; add an entry once each promo is posted on Instagram. */
+export interface Promo { id: string; url: string; title: string; href: string; cta: string }
+export const PROMOS: Promo[] = [];
 
 export async function videos(filter: { topic?: VideoTopic; stage?: number; limit?: number } = {}): Promise<Video[]> {
   let list = LIBRARY;

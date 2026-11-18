@@ -114,3 +114,28 @@ input[type='range'] { accent-color: var(--teal); min-height: 28px; padding: 0; b
 /* Agent name in the nav with its role underneath */
 .nav a{display:inline-flex;flex-direction:column;align-items:center;line-height:1.15}
 .nav .nav-role{font-size:10px;font-weight:400;color:var(--dim);letter-spacing:.2px}
+
+/* Pictorial SIXXAB journey */
+.journey-map { background: linear-gradient(180deg, rgba(15,35,66,.5), rgba(8,19,31,.2)); border-radius: 12px; padding: 4px 0; overflow: hidden; }
+.journey-map svg { width: 100%; height: auto; display: block; }
+.journey-stops { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.journey-stops li { border-radius: 10px; padding: 12px; background: var(--panel2); border: 1px solid var(--line2); display: flex; flex-direction: column; gap: 4px; }
+.journey-stops li.now { border: 2px solid var(--gold); background: rgba(212,168,75,.14); }
+.journey-stops li.done { border-color: rgba(46,229,157,.5); }
+.journey-name { font: 700 15px var(--head); color: #fff; }
+.journey .gate { font-size: 11.5px; color: var(--muted); display: flex; gap: 6px; align-items: flex-start; line-height: 1.35; }
+.gate-dot { flex: 0 0 8px; height: 8px; border-radius: 50%; margin-top: 4px; border: 1.5px solid var(--gold); }
+.gate-dot.ok { background: #2EE59D; border-color: #2EE59D; }
+.journey .coach { margin-top: auto; padding-top: 6px; font-size: 12px; font-weight: 600; }
+/* Featured daily brief + agent promos */
+.feature { display: grid; grid-template-columns: minmax(260px, 360px) 1fr; gap: 20px; align-items: start; }
+@media (max-width: 760px) { .feature { grid-template-columns: 1fr; } }
+.promo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+.promo { display: flex; flex-direction: column; gap: 10px; }
+/* Pivot levels */
+.pivot-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 16px; }
+.pivot { display: flex; flex-direction: column; gap: 8px; }
+.trend-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.trend-chips span { border: 1px solid; border-radius: 999px; padding: 2px 9px; font: 600 11px var(--mono, monospace); }
+.pivot-scen { margin: 0; padding-left: 18px; font-size: 13px; display: grid; gap: 4px; }
+.pivot-scen li.bull::marker { color: #2EE59D; } .pivot-scen li.bear::marker { color: #FF5C7A; }

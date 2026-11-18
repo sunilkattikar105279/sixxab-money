@@ -8,6 +8,7 @@ import { PlanList } from '@/components/PlanList';
 import { VideoRail } from '@/components/VideoRail';
 import { videos } from '@/lib/media';
 import { CheckinForm, PromoteButton } from '@/components/JourneyActions';
+import { JourneyPath } from '@/components/JourneyPath';
 
 export const metadata: Metadata = { title: 'Journey' };
 
@@ -55,6 +56,7 @@ export default async function Journey() {
           ) : <p className="muted" style={{ margin: 0 }}>You are at the top stage. Keep your estate plan and community fund current, and mentor others.</p>}
         </div>
       </section>
+      <JourneyPath progress={{ stage: s.n, country: me.country, habitMonths: streak, netWorth: suggestedNw }} />
       <section className="card" aria-label="This week's lesson" style={{ borderColor: 'var(--teal)' }}>
         <div className="tag teal">Week {wk} of 12 · {tr.phase[Math.floor((wk - 1) / 4)]}</div>
         <h2 style={{ margin: '6px 0 4px' }}>{lesson.title}</h2>

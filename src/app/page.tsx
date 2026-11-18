@@ -1,13 +1,11 @@
 import { Header, Footer } from '@/components/Header';
 import { getSnapshot, type Market } from '@/lib/data/market';
 import { adminClient } from '@/lib/supabase/admin';
-import { STAGES } from '@/lib/sixs';
 import Link from 'next/link';
 import { getStocks } from '@/lib/data/stocks';
 import { IndustryMap } from '@/components/IndustryMap';
 import { StockTable } from '@/components/StockTable';
 import { VideoRail } from '@/components/VideoRail';
-import { StageIcon } from '@/components/StageIcon';
 import { videos } from '@/lib/media';
 import { getBreadth } from '@/lib/data/breadth';
 import { Breadth } from '@/components/Breadth';
@@ -16,6 +14,10 @@ import { policyBriefs } from '@/lib/data/policy';
 import { JoinHero } from '@/components/JoinHero';
 import { RiskMeter } from '@/components/RiskMeter';
 import { getRegime } from '@/lib/data/regime';
+import { JourneyPath, type JourneyProgress } from '@/components/JourneyPath';
+import { getMember } from '@/lib/member';
+import { Reel } from '@/components/Reel';
+import { PROMOS } from '@/lib/media';
 
 export const revalidate = 300;
 
@@ -26,14 +28,24 @@ async function latestBrief(): Promise<string | null> {
   return data?.text ?? null;
 }
 
+async function memberJourney(): Promise<JourneyProgress | null> {
+  const m = await getMember();
+  if (!m?.member) return null;
+  const { data } = await m.sb.from('monthly_checks').select('month, habit_gate_met, net_worth').eq('member_id', m.member.id).order('month', { ascending: false }).limit(3);
+  let habitMonths = 0; for (const c of data ?? []) { if (c.habit_gate_met) habitMonths++; else break; }
+  return { stage: m.member.stage, country: m.member.country, habitMonths, netWorth: data?.[0]?.net_worth ?? null };
+}
+
 const fmt = (v: number | null, d = 2) => (v === null ? '—' : v.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d }));
 const sign = (v: number | null) => (v === null ? '' : v > 0 ? '+' : v < 0 ? '−' : '');
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ m?: string }> }) {
   const { m } = await searchParams;
   const market: Market = m === 'IN' || m === 'GLOBAL' ? m : 'US';
-  const [snap, brief, board, briefs] = await Promise.all([getSnapshot(market), market === 'US' ? latestBrief() : Promise.resolve(null), getStocks(market), videos({ topic: 'daily-brief', limit: 4 })]);
+  const [snap, brief, board, briefs] = await Promise.all([getSnapshot(market), market === 'US' ? latestBrief() : Promise.resolve(null), getStocks(market), videos({ topic: 'daily-brief', limit: 6 })]);
   const [breadth, briefsList, regime] = await Promise.all([getBreadth(market, board), policyBriefs(undefined, 3), market === 'GLOBAL' ? Promise.resolve(null) : getRegime(market)]);
+  const journey = await memberJourney();
+  const [today, ...moreBriefs] = briefs;
   const mapTitle = market === 'US' ? 'US industry map' : market === 'IN' ? 'India industry map (NSE)' : 'Global industry map';
   const fallbackBrief = market === 'US' && snap.sample
     ? 'Chip stocks pulled the Nasdaq down 0.9% after Nvidia’s CEO exit, while the Dow edged up. More stocks fell than rose.'
@@ -44,6 +56,36 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ m
       <Header active="Home" market={market} />
       <main className="wrap" id="main">
         <JoinHero />
+        {today && (
+          <section className="card feature" aria-label="Today's daily brief">
+            <Reel url={today.url} title={today.title} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div className="tag teal">Watch today’s daily brief · {today.date}</div>
+              <h2 style={{ margin: 0 }}>{today.title.replace(/^Daily brief:\s*/, '')}</h2>
+              <p className="muted" style={{ margin: 0 }}>Built by the SIXXAB Money agent team every weekday by 8:00 AM CST: Tape reads the US and India close, Sigma the risk meter, Delta the sectors, Macro the economy and Pivot the levels. Educational, not financial advice.</p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+                <Link href="/screener" className="btn">Open the Quant screener</Link>
+                <Link href="/levels" className="btn btn-line">Pivot levels</Link>
+                <a href="https://www.instagram.com/sixxab_money/" target="_blank" rel="noopener noreferrer" className="btn btn-line">Follow @sixxab_money</a>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {PROMOS.length > 0 && (
+          <section className="card" aria-label="Meet the agents">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, marginBottom: 12 }}><h2>Meet the agents</h2><span className="dim" style={{ fontSize: 12 }}>powered by SIXXAB Money</span></div>
+            <div className="promo-grid">
+              {PROMOS.map((p) => (
+                <div key={p.id} className="promo">
+                  <Reel url={p.url} title={p.title} compact />
+                  <Link href={p.href} className="btn btn-line">{p.cta} →</Link>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         <section className="bar" aria-label="Agent brief">
           <span className="tag teal">Agent brief{snap.asOf ? ` · ${snap.asOf}` : ''}</span>
           <span style={{ flex: '1 1 480px' }}>{brief ?? fallbackBrief}</span>
@@ -69,22 +111,12 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ m
 
         <IndustryMap board={board} title={mapTitle} />
 
-        <VideoRail title="Watch the daily brief" items={briefs} note="Built by the SIXXAB Money agent each weekday" />
+        <VideoRail title="Earlier daily briefs" items={moreBriefs} note="Built by the SIXXAB Money agent each weekday" />
 
         <div className="cols">
           <div className="main">
             <StockTable board={board} currency={market === 'US' ? 'USD' : market === 'IN' ? 'INR' : 'local'} />
-            <section className="card" aria-label="Your SIXXAB journey">
-              <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: 8, marginBottom: 14 }}>
-                <h2>The SIXXAB journey</h2><span className="dim" style={{ fontSize: 12 }}>Six money stages, from age 11 to legacy</span>
-              </div>
-              <ol className="stages">
-                {STAGES.map((s) => (
-                  <li key={s.key}><StageIcon n={s.n} /><div className="tag gold">Stage {s.n}</div><div style={{ font: '700 15px var(--head)', color: '#fff', margin: '4px 0' }}>{s.name}</div><div className="muted" style={{ fontSize: 12 }}>{s.focus}</div></li>
-                ))}
-              </ol>
-              <div style={{ marginTop: 14, display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}><span className="muted">Your coach checks in each month and moves you up when both gates hold for three months.</span><Link href="/my-money" className="btn btn-line" style={{ marginLeft: 'auto' }}>Find my stage</Link></div>
-            </section>
+            <JourneyPath progress={journey} />
           </div>
           <aside className="side">
             <TopMovers board={board} />

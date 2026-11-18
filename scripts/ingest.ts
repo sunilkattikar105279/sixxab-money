@@ -8,6 +8,8 @@ import { getBars, providerName } from '../src/lib/providers';
 import type { Market } from '../src/lib/data/market';
 import { readRegime, type Point, type RegimeRead } from '../src/lib/regime';
 import { cboeHistory } from '../src/lib/providers/cboe';
+import { analyze } from '../src/lib/ta/analyze';
+import { pivotRead, PIVOT_SYMBOLS, type PivotBoard } from '../src/lib/pivot';
 import { providerConfigured } from '../src/lib/providers';
 import { readRotation, US_SECTORS, IN_SECTORS } from '../src/lib/rotation';
 import { resolve } from '../src/lib/scorecard';
@@ -67,6 +69,21 @@ async function main() {
     regime.breadth = breadth;
     const { error } = await db.from('market_regime').upsert({ market, as_of: regime.asOf, zone: regime.zone, level: regime.level, data: regime }, { onConflict: 'market,as_of' });
     console.log(`${market} breadth: ${breadth.read} (${breadth.pctAbove200}% above 200-day, ${breadth.advancers} up / ${breadth.decliners} down)${error ? ` (not stored: ${error.message})` : ''}`);
+  }
+  // Pivot · Levels: nightly multi-timeframe read of the index ETFs (US only; India levels stay hidden for SEBI)
+  if (market === 'US' && regime) {
+    try {
+      const reads = [];
+      for (const p of PIVOT_SYMBOLS) {
+        const [daily, hourly] = await Promise.all([getBars('US', p.symbol, '1d', 365 * 6), getBars('US', p.symbol, '1h', 59)]);
+        if (daily.length >= 80) reads.push(pivotRead(analyze(p.symbol, daily, hourly), p.name, asOf));
+      }
+      const pivot: PivotBoard = { asOf, reads };
+      const data = { ...regime, pivot } as typeof regime & { pivot: PivotBoard };
+      const { error } = await db.from('market_regime').upsert({ market, as_of: regime.asOf, zone: regime.zone, level: regime.level, data }, { onConflict: 'market,as_of' });
+      for (const r of reads) console.log(`Pivot ${r.symbol}: ${r.bias} · ${r.scenarios.map((s) => `${s.side} ${s.trigger}`).join(' / ')}`);
+      if (error) console.warn(`pivot not stored: ${error.message}`);
+    } catch (e) { console.warn(`pivot skipped: ${e instanceof Error ? e.message : e}`); }
   }
   const withEvents = rows.filter((r) => r.tech.events).length;
   if (market === 'US') console.log(`US events: earnings and insider data for ${withEvents} of ${rows.length} stocks`);
