@@ -10,8 +10,8 @@ import { JoinButton } from './JoinButton';
 function Card({ tag, title, points, children, actions, video, gold }: { tag: string; title: string; points: string[]; children?: React.ReactNode; actions: React.ReactNode; video?: Promo; gold?: boolean }) {
   return (
     <article className={`card promo-card${gold ? ' promo-gold' : ''}`}>
-      <div className={`tag ${gold ? 'gold' : 'teal'}`}>{tag}</div>
-      <h2 style={{ margin: 0 }}>{title}</h2>
+      <div className={`tag ${gold ? 'gold' : 'teal'} promo-tag`}>{tag}</div>
+      <h2 className="promo-title">{title}</h2>
       <ul className="hero-points" style={{ fontSize: 14 }}>{points.map((p) => <li key={p}>{p}</li>)}</ul>
       <div className="promo-body">
         {video && <video className="promo-video" src={video.url} poster={video.poster} controls autoPlay muted loop playsInline preload="metadata" aria-label={video.title} />}
@@ -34,21 +34,25 @@ export async function TopPromos() {
   return (
     <section className="promo-grid promo-top" aria-label="SIXXAB Money agents">
       {member ? (
-        <Card gold tag="Mentor · Personal money coach" title={`Welcome back${member.name ? `, ${member.name.split(' ')[0]}` : ''}`}
+        <Card gold tag="Mentor · Money coach" title={`Welcome back${member.name ? `, ${member.name.split(' ')[0]}` : ''}`}
           points={[`Stage ${member.stage} · ${stageOf(member.stage).name}: ${stageOf(member.stage).focus}`, 'This week’s lesson and your next money move', 'Ask your coach anything, with sources']}
-          actions={<><Link href="/my-money/journey" className="btn btn-gold">Continue my journey</Link><Link href="/ask" className="btn btn-line">Ask Mentor</Link></>} video={promo('coach')} />
+          actions={<><Link href="/my-money/journey" className="btn btn-gold">Continue my journey</Link><Link href="/ask" className="btn btn-line">Ask Mentor</Link></>} video={promo('coach')}>
+        <div className="mini-rows">{['Startup', 'Struggle', 'Scale', 'Success', 'Significance', 'SIXXAB'].map((n, i) => <div key={n}><span>{i + 1} · {n}</span><span className="mono dim" style={{ fontSize: 11 }}>{member && member.stage === i + 1 ? 'You are here' : ''}</span></div>)}</div>
+      </Card>
       ) : (
-        <Card gold tag={left > 0 ? `Personal money coach · ${left} of ${FOUNDING_SPOTS} free founding spots` : 'Personal money coach'} title="Your personal money coach for the US and India"
-          points={['A 90-day plan built around your goal', 'A 6-stage journey from age 11 to legacy', 'Private by design: no ads, data never sold']}
-          actions={<><JoinButton label={left > 0 ? 'Claim my free spot' : 'Join free'} /><Link href="/ask?q=How%20do%20I%20start%20an%20emergency%20fund%3F" className="btn btn-line">Try Mentor</Link></>} video={promo('coach')} />
+        <Card gold tag="Mentor · Money coach" title="Your personal money coach"
+          points={['A 90-day plan built around your goal', 'A 6-stage journey from age 11 to legacy', left > 0 ? `${left} of ${FOUNDING_SPOTS} free founding spots left` : 'Private: no ads, data never sold']}
+          actions={<><JoinButton label={left > 0 ? 'Claim my free spot' : 'Join free'} /><Link href="/ask?q=How%20do%20I%20start%20an%20emergency%20fund%3F" className="btn btn-line">Try Mentor</Link></>} video={promo('coach')}>
+        <div className="mini-rows">{['Startup', 'Struggle', 'Scale', 'Success', 'Significance', 'SIXXAB'].map((n, i) => <div key={n}><span>{i + 1} · {n}</span><span className="mono dim" style={{ fontSize: 11 }}>{member && member.stage === i + 1 ? 'You are here' : ''}</span></div>)}</div>
+      </Card>
       )}
-      <Card tag="Quant · Screener" title="Find stocks worth a closer look, every night"
-        points={['Scores US and India stocks on trend, business strength and risk', 'Plain-English reasons, with sources', 'Earnings and insider-trade alerts']}
+      <Card tag="Quant · Screener" title="Stocks worth a closer look"
+        points={['Scores US and India stocks every night', 'Plain-English reasons, with sources', 'Earnings and insider-trade alerts']}
         actions={<Link href="/screener" className="btn">Open the screener</Link>} video={promo('quant')}>
         <div className="mini-rows">{['Trend', 'Business strength', 'Market regime'].map((f, i) => <div key={f}><span>{f}</span><span className="bar-mini"><span style={{ width: `${[78, 64, 46][i]}%` }} /></span></div>)}</div>
       </Card>
-      <Card tag="Delta · Money-move manager" title="See where the money is moving"
-        points={['11 US and 10 Nifty sectors vs the index', 'Leading, improving, weakening or lagging', 'Market cycle with Wyckoff and Elliott']}
+      <Card tag="Delta · Money-move manager" title="Where the money is moving"
+        points={['11 US and 10 Nifty sectors vs the index', 'Leading, improving or lagging', 'Market cycle: Wyckoff and Elliott']}
         actions={<Link href="/sectors" className="btn">See sector rotation</Link>} video={promo('delta')}>
         <div className="mini-rows">{rot ? <>
           <div className="dim" style={{ fontSize: 11 }}>US cycle: {rot.indexPhase}</div>

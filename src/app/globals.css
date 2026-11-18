@@ -157,3 +157,8 @@ input[type='range'] { accent-color: var(--teal); min-height: 28px; padding: 0; b
 .promo-body { display: flex; gap: 12px; align-items: stretch; }
 .promo-body .promo-preview { flex: 1; }
 .promo-video { flex: 0 0 120px; width: 120px; aspect-ratio: 9 / 16; border-radius: 10px; background: #000; object-fit: cover; border: 1px solid var(--line2); }
+
+.promo-tag { align-self: flex-start; }
+.promo-title { margin: 0; font: 800 clamp(22px, 2.2vw, 28px)/1.15 var(--head); color: #fff; min-height: 2.3em; }
+.promo-card .hero-points { min-height: 4.6em; }
+.promo-card .btn { flex: 1 1 auto; text-align: center; }
