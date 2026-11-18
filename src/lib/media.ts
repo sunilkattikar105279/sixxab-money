@@ -64,3 +64,13 @@ export async function searchVideos(query: string, limit = 2): Promise<Video[]> {
     .slice(0, limit)
     .map((x) => x.v);
 }
+
+/** Cover image (the host clone frame) for a daily brief, read from the brief manifest the brief agent keeps. */
+export async function briefThumb(id: string): Promise<string | null> {
+  try {
+    const res = await fetch('https://raw.githubusercontent.com/sunilkattikar105279/sixxab-ai/reel-media/briefs.json', { next: { revalidate: 600 } });
+    if (!res.ok) return null;
+    const list = (await res.json()) as { id: string; thumb?: string }[];
+    return list.find((e) => e.id === id)?.thumb ?? null;
+  } catch { return null; }
+}

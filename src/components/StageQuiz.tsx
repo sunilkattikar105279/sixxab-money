@@ -24,20 +24,27 @@ export function StageQuiz({ onResult, compact = false, initial }: { onResult?: (
   }
   return (
     <section className={compact ? '' : 'card'} aria-label="Find your stage" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      {!compact && <><h2 style={{ margin: 0 }}>Find your stage in 3 questions</h2><p className="muted" style={{ margin: 0 }}>No sign-up needed. Your answers stay on this device until you join.</p></>}
-      {!compact && <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}><input type="checkbox" checked={teen} onChange={(e) => setTeen(e.target.checked)} style={{ width: 18, minHeight: 18 }} /> I&apos;m under 18</label>}
-      {QUIZ.map((q) => (
-        <fieldset key={q.key} style={{ border: 0, padding: 0, margin: 0 }}>
-          <legend style={{ marginBottom: 6, fontWeight: 600 }}>{q.q}</legend>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-            {q.options.map((o) => (
-              <label key={o.value} className="inset" style={{ display: 'flex', gap: 8, alignItems: 'center', minHeight: 44, cursor: 'pointer', border: `1px solid ${a[q.key] === o.value ? 'var(--teal)' : 'var(--line2)'}` }}>
-                <input type="radio" name={`quiz-${q.key}`} value={o.value} checked={a[q.key] === o.value} onChange={() => pick(q.key, o.value)} style={{ width: 18, minHeight: 18 }} /> {o.label}
-              </label>
-            ))}
-          </div>
-        </fieldset>
-      ))}
+      {!compact && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 }}>
+          <div><h2 style={{ margin: 0 }}>Find your stage in 3 questions</h2><p className="muted" style={{ margin: '4px 0 0' }}>No sign-up needed. Your answers stay on this device until you join.</p></div>
+          <label className="quiz-teen"><input type="checkbox" checked={teen} onChange={(e) => setTeen(e.target.checked)} /> I&apos;m under 18</label>
+        </div>
+      )}
+      <div className="quiz-grid">
+        {QUIZ.map((q, qi) => (
+          <fieldset key={q.key} className="quiz-q">
+            <legend><span className="quiz-n">{qi + 1}</span>{q.q}</legend>
+            <div className="quiz-opts">
+              {q.options.map((o) => (
+                <label key={o.value} className={`quiz-opt${a[q.key] === o.value ? ' on' : ''}`}>
+                  <input type="radio" name={`quiz-${q.key}`} value={o.value} checked={a[q.key] === o.value} onChange={() => pick(q.key, o.value)} />
+                  <span>{o.label}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        ))}
+      </div>
       {s && !compact && (
         <div className="inset" role="status" style={{ border: '1px solid var(--gold)', display: 'flex', flexDirection: 'column', gap: 8 }}>
           <div className="tag gold">Your stage: {s.n} · {s.name}</div>

@@ -22,7 +22,7 @@ export function IndustryMap({ board, title }: { board: StockBoard; title: string
     <section className="card" aria-label={title}>
       <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, marginBottom: 12 }}>
         <h2>{title}</h2>
-        <Legend /><span className="dim" style={{ fontSize: 12 }}>{board.asOf || 'awaiting data'}{board.sample ? ' · sample' : ''}</span>
+        <Legend /><span className="dim" style={{ fontSize: 12 }}>{board.asOf ? `close ${new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' }).format(new Date(board.asOf + 'T12:00:00Z'))}` : 'awaiting data'}{board.sample ? ' · sample' : ''}</span>
       </div>
       <div style={{ position: 'relative', width: '100%', aspectRatio: `${W} / ${H}`, minHeight: 220 }}>
         {placedSectors.map((s) => {

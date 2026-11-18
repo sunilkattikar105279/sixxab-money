@@ -64,17 +64,20 @@ export async function TopPromos() {
   );
 }
 
-/** Today's daily brief as one small card that links to the reel (no embed). */
-export function BriefMini({ brief }: { brief?: Video }) {
+/** Today's daily brief: the clone cover, the headline and a link to the reel (no embed). */
+export function BriefMini({ brief, thumb }: { brief?: Video; thumb?: string | null }) {
   if (!brief) return null;
   return (
     <a href={brief.url} target="_blank" rel="noopener noreferrer" className="card brief-mini" aria-label={`Watch today's daily brief: ${brief.title}`}>
-      <div className="brief-thumb" aria-hidden="true"><span className="play">▶</span><span className="thumb-tag">DAILY BRIEF</span></div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
-        <div className="tag teal">Today’s daily brief · {brief.date} · about 1 min</div>
-        <div style={{ font: '700 16px var(--head)', color: '#fff' }}>{brief.title.replace(/^Daily brief:\s*/, '')}</div>
-        <div className="muted" style={{ fontSize: 13 }}>Watch on Instagram →</div>
+      <div className="brief-thumb" aria-hidden="true" style={thumb ? { backgroundImage: `url(${thumb})` } : undefined}><span className="play">▶</span><span className="thumb-tag">DAILY BRIEF</span></div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 0 }}>
+        <div className="tag teal">Today’s daily brief · {fmtDay(brief.date)}</div>
+        <div style={{ font: '700 18px var(--head)', color: '#fff' }}>{brief.title.replace(/^Daily brief:\s*/, '')}</div>
+        <div className="muted" style={{ fontSize: 13 }}>About 1 minute · US and India close, risk meter, levels</div>
+        <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--teal)' }}>Watch on Instagram →</div>
       </div>
     </a>
   );
 }
+
+export const fmtDay = (d: string) => (d ? new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' }).format(new Date(d + 'T12:00:00Z')) : '—');

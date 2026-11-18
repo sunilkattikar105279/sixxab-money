@@ -24,21 +24,22 @@ export function JourneyPath({ progress, country = 'US' }: { progress?: JourneyPr
   const c = progress?.country ?? country;
   const cur = progress?.stage ?? 0;
   // stops climb left to right; y rises with each stage
-  const X = (i: number) => 60 + i * 176, Y = (i: number) => 230 - i * 36;
+  const X = (i: number) => 100 + i * 200, Y = (i: number) => 196 - i * 30; // node i sits over box column i
   return (
     <section className="card journey" aria-label="The SIXXAB journey">
       <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: 8, marginBottom: 6 }}>
         <h2>The SIXXAB journey</h2>
-        <span className="dim" style={{ fontSize: 12 }}>Six money stages, from age 11 to legacy · two gates per stage · an agent coach at every step</span>
+        <span className="dim" style={{ fontSize: 13 }}>Six stages from age 11 to legacy · two gates per stage · an agent coach at every step</span>
       </div>
 
+      <div className="journey-scroll">
       <div className="journey-map" role="img" aria-label="Path climbing through six stages from Startup to SIXXAB">
-        <svg viewBox="0 0 1000 270" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+        <svg viewBox="0 0 1200 250" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
           <defs>
             <linearGradient id="jp-path" x1="0" x2="1"><stop offset="0" stopColor="#2EE59D" /><stop offset="1" stopColor="#D4A84B" /></linearGradient>
           </defs>
           {/* mountain silhouette */}
-          <path d="M0 270 L180 170 L300 205 L470 110 L600 150 L780 50 L1000 120 L1000 270 Z" fill="rgba(212,168,75,.06)" />
+          <path d="M0 250 L200 170 L360 200 L560 110 L720 140 L940 40 L1200 100 L1200 250 Z" fill="rgba(212,168,75,.06)" />
           {/* the path */}
           <path d={STAGES.map((_, i) => `${i ? 'L' : 'M'}${X(i)} ${Y(i)}`).join(' ')} fill="none" stroke="url(#jp-path)" strokeWidth="5" strokeLinecap="round" strokeDasharray="2 12" />
           {STAGES.map((s, i) => {
@@ -50,12 +51,12 @@ export function JourneyPath({ progress, country = 'US' }: { progress?: JourneyPr
                 <text y="6" textAnchor="middle" fontSize="18" fontWeight="800" fill={done || now ? '#08131F' : '#D4A84B'}>{done ? '✓' : s.n}</text>
                 {/* gate flags */}
                 <g transform="translate(30 -30)"><path d="M0 0v26M0 0h16l-4 5 4 5H0" stroke="#2EE59D" strokeWidth="2" fill="rgba(46,229,157,.25)" /></g>
-                <text y="48" textAnchor="middle" fontSize="15" fontWeight="700" fill="#F4F7FB">{s.name}</text>
+                <text y="46" textAnchor="middle" fontSize="16" fontWeight="700" fill="#F4F7FB">{s.n}. {s.name}</text>
+                <text y="64" textAnchor="middle" fontSize="12" fill="#9FB0C4">{STAGE_COACH[s.n].age}</text>
               </g>
             );
           })}
-          <text x={X(5) + 40} y={Y(5) - 30} fontSize="12" fill="#D4A84B">Legacy</text>
-          <text x={X(0) - 40} y={Y(0) + 34} fontSize="12" fill="#9FB0C4">Start here</text>
+          <text x={X(0)} y={Y(0) - 36} textAnchor="middle" fontSize="12" fill="#2EE59D">Start here</text>
         </svg>
       </div>
 
@@ -67,7 +68,7 @@ export function JourneyPath({ progress, country = 'US' }: { progress?: JourneyPr
           const habitMet = now && (progress?.habitMonths ?? 0) >= HOLD_MONTHS;
           return (
             <li key={s.key} className={now ? 'now' : done ? 'done' : ''}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><StageIcon n={s.n} size={30} /><div><div className="tag gold">Stage {s.n} · {coach.age}</div><div className="journey-name">{s.name}{done ? ' ✓' : ''}</div></div></div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><StageIcon n={s.n} size={30} /><div><div className="tag gold">Stage {s.n} · {coach.age}</div><div className="journey-name">{s.n}. {s.name}{done ? ' ✓' : ''}</div></div></div>
               <p className="muted" style={{ fontSize: 12, margin: '6px 0' }}>{s.focus}</p>
               <div className="gate"><span className={`gate-dot ${habitMet ? 'ok' : ''}`} />Habit gate: {s.habitGate}{now ? ` (${Math.min(progress?.habitMonths ?? 0, HOLD_MONTHS)}/${HOLD_MONTHS} months)` : ''}</div>
               <div className="gate"><span className={`gate-dot ${nwMet ? 'ok' : ''}`} />{nwGate == null ? 'Top stage: legacy, no net-worth gate' : `Net-worth gate: ${money(nwGate, c)}${now && progress?.netWorth != null ? ` (you: ${money(Math.round(progress.netWorth), c)})` : ''}`}</div>
@@ -76,9 +77,10 @@ export function JourneyPath({ progress, country = 'US' }: { progress?: JourneyPr
           );
         })}
       </ol>
+      </div>
       <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
         <span className="muted" style={{ fontSize: 13 }}>Move up when both gates hold for {HOLD_MONTHS} monthly check-ins in a row. Your coach checks in each month.</span>
-        <Link href={progress ? '/my-money/journey' : '/stages'} className="btn btn-line" style={{ marginLeft: 'auto' }}>{progress ? 'Open my journey' : 'Take the 2-minute stage quiz'}</Link>
+        <Link href={progress ? '/my-money/journey' : '/journey'} className="btn btn-line" style={{ marginLeft: 'auto' }}>{progress ? 'Open my journey' : 'Take the 2-minute stage quiz'}</Link>
       </div>
     </section>
   );
