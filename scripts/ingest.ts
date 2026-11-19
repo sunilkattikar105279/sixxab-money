@@ -18,7 +18,7 @@ import { computeBreadth } from '../src/lib/breadth';
 const INDEX_PROXIES: Record<Market, { symbol: string; name: string }[]> = {
   US: [{ symbol: 'SPY', name: 'S&P 500 (SPY)' }, { symbol: 'QQQ', name: 'Nasdaq 100 (QQQ)' }, { symbol: 'DIA', name: 'Dow (DIA)' }, { symbol: 'IWM', name: 'Russell 2000 (IWM)' }],
   IN: [{ symbol: 'NSE_INDEX|Nifty 50', name: 'Nifty 50' }, { symbol: 'NSE_INDEX|Nifty Bank', name: 'Bank Nifty' }, { symbol: 'BSE_INDEX|SENSEX', name: 'Sensex' }, { symbol: 'NSE_INDEX|India VIX', name: 'India VIX' }],
-  GLOBAL: [{ symbol: 'EFA', name: 'Developed markets (EFA)' }, { symbol: 'EEM', name: 'Emerging markets (EEM)' }, { symbol: 'GLD', name: 'Gold (GLD)' }, { symbol: 'USO', name: 'Oil (USO)' }],
+  GLOBAL: [{ symbol: '^FTSE', name: 'FTSE 100' }, { symbol: '^GDAXI', name: 'DAX' }, { symbol: '^N225', name: 'Nikkei 225' }, { symbol: '^HSI', name: 'Hang Seng' }, { symbol: 'GC=F', name: 'Gold' }, { symbol: 'BZ=F', name: 'Brent crude' }],
 };
 
 async function main() {
@@ -35,11 +35,11 @@ async function main() {
   for (const p of INDEX_PROXIES[market]) {
     const b = await getBars(market, p.symbol, '1d', 10);
     if (b.length >= 2 && !(p.name === 'India VIX' && b.at(-1)!.c === b.at(-2)!.c)) { const l = b.at(-1)!, pr = b.at(-2)!; lastBar = Math.max(lastBar, l.t); indices.push({ name: p.name, value: l.c, change: l.c - pr.c, changePct: ((l.c - pr.c) / pr.c) * 100 }); }
-    if (market === 'GLOBAL') await new Promise((r) => setTimeout(r, 8000));
+
   }
   // Date the run by the latest session it covers (market-local), not the clock: a run GitHub starts late
   // (after midnight UTC) must still file yesterday's close under yesterday's date.
-  const tz = market === 'IN' ? 'Asia/Kolkata' : 'America/New_York';
+  const tz = market === 'IN' ? 'Asia/Kolkata' : market === 'GLOBAL' ? 'Europe/London' : 'America/New_York';
   const asOf = new Intl.DateTimeFormat('en-CA', { timeZone: tz }).format(lastBar ? new Date(lastBar) : new Date());
   console.log(`${market}: session ${asOf} via ${source}, ${indices.length} indexes: ${indices.map((q) => `${q.name} ${q.value.toFixed(2)} (${q.changePct >= 0 ? '+' : ''}${q.changePct.toFixed(2)}%)`).join(' · ')}`);
   if (indices.length) await db.from('market_snapshots').upsert({ market, as_of: asOf, source, indices }, { onConflict: 'market,as_of' });
@@ -132,18 +132,19 @@ async function main() {
     }
   } catch (e) { console.warn(`rotation skipped: ${e instanceof Error ? e.message : e}`); }
   // Tape · nightly agent brief for the home page (plain facts from this run, no model call needed)
-  if (market !== 'GLOBAL' && indices.length) {
+  if (indices.length) {
     try {
       const pct = (v: number) => `${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(2)}%`;
       const day = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'short', day: 'numeric', timeZone: 'UTC' }).format(new Date(asOf + 'T12:00:00Z'));
       const idx = indices.filter((q) => q.name !== 'India VIX').map((q) => `${q.name.replace(/ \(.*\)$/, '')} ${pct(q.changePct)}`).join(', ');
       const { data: rotRow } = await db.from('sector_rotation').select('data').eq('market', market).order('as_of', { ascending: false }).limit(1).maybeSingle();
       const lead = ((rotRow?.data as { sectors?: { name: string; quadrant: string }[] } | null)?.sectors ?? []).filter((x) => x.quadrant === 'leading').slice(0, 2).map((x) => x.name);
-      const parts = [`${market === 'US' ? 'US' : 'India'} close, ${day}: ${idx}.`];
+      const label = market === 'US' ? 'US' : market === 'IN' ? 'India' : 'Global';
+      const parts = [`${label} close, ${day}: ${idx}.`];
       if (regime) parts.push(`Sigma: ${regime.gauge} ${regime.level.toFixed(1)} (${regime.zone})${regime.breadth ? `; ${regime.breadth.pctAbove200}% of tracked stocks are above their 200-day average` : ''}.`);
       if (lead.length) parts.push(`Delta: ${lead.join(' and ')} lead.`);
       const text = parts.join(' ');
-      await db.from('briefs').delete().eq('market', market).gte('created_at', new Date(Date.now() - 20 * 3_600_000).toISOString()).like('text', `${market === 'US' ? 'US' : 'India'} close, %`);
+      await db.from('briefs').delete().eq('market', market).gte('created_at', new Date(Date.now() - 20 * 3_600_000).toISOString()).like('text', `${label} close, %`);
       const { error } = await db.from('briefs').insert({ market, text, sources: [{ title: source }] });
       console.log(`${market} agent brief: ${text}${error ? ` (not stored: ${error.message})` : ''}`);
     } catch (e) { console.warn(`agent brief skipped: ${e instanceof Error ? e.message : e}`); }

@@ -12,11 +12,12 @@ export async function getBars(market: Market, symbol: string, tf: FetchTF, daysB
   const start = new Date(Date.now() - daysBack * 86_400_000).toISOString();
   if (market === 'US') return alpacaBars(symbol, tf, start);
   if (market === 'IN') return process.env.UPSTOX_ACCESS_TOKEN ? upstoxBars(symbol, tf, start) : yahooBars(symbol, tf, start);
+  if (symbol.startsWith('^') || symbol.includes('=')) return yahooBars(symbol, tf, start); // global indexes and futures
   return twelveBars(symbol, tf, Math.min(5000, tf === '1d' ? daysBack : 5000));
 }
 
 export function providerName(market: Market): string {
-  return market === 'US' ? 'Alpaca (IEX feed)' : market === 'IN' ? (process.env.UPSTOX_ACCESS_TOKEN ? 'Upstox (NSE)' : 'Yahoo Finance (NSE, delayed)') : 'Twelve Data';
+  return market === 'US' ? 'Alpaca (IEX feed)' : market === 'IN' ? (process.env.UPSTOX_ACCESS_TOKEN ? 'Upstox (NSE)' : 'Yahoo Finance (NSE, delayed)') : 'Yahoo Finance (global indexes, delayed) and Twelve Data (stocks)';
 }
 
 export function providerConfigured(market: Market): boolean {

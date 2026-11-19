@@ -18,7 +18,7 @@ import { TopPromos, BriefMini, fmtDay } from '@/components/TopPromos';
 
 export const revalidate = 300;
 
-async function latestBrief(market: 'US' | 'IN'): Promise<string | null> {
+async function latestBrief(market: 'US' | 'IN' | 'GLOBAL'): Promise<string | null> {
   const db = adminClient();
   if (!db) return null;
   const { data } = await db.from('briefs').select('text').eq('market', market).order('created_at', { ascending: false }).limit(1).maybeSingle();
@@ -51,7 +51,7 @@ const sign = (v: number | null) => (v === null ? '' : v > 0 ? '+' : v < 0 ? '−
 export default async function Home({ searchParams }: { searchParams: Promise<{ m?: string }> }) {
   const { m } = await searchParams;
   const market: Market = m === 'IN' || m === 'GLOBAL' ? m : 'US';
-  const [snap, brief, board, briefs, briefIN] = await Promise.all([getSnapshot(market), latestBrief('US'), getStocks(market), videos({ topic: 'daily-brief', limit: 1 }), latestBrief('IN')]);
+  const [snap, brief, board, briefs, briefIN, briefGL] = await Promise.all([getSnapshot(market), latestBrief('US'), getStocks(market), videos({ topic: 'daily-brief', limit: 1 }), latestBrief('IN'), latestBrief('GLOBAL')]);
   const [breadth, briefsList, regime] = await Promise.all([getBreadth(market, board), policyBriefs(undefined, 3), market === 'GLOBAL' ? Promise.resolve(null) : getRegime(market)]);
   const journey = await memberJourney();
   const [today] = briefs;
@@ -73,6 +73,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ m
             <div className="tag teal">Tape · agent brief</div>
             <p style={{ margin: 0 }}>{brief ?? fallbackBrief}</p>
             {briefIN && <p className="muted" style={{ margin: 0 }}>{briefIN}</p>}
+            {briefGL && <p className="muted" style={{ margin: 0 }}>{briefGL}</p>}
             <Link href="/ask?q=Why%20did%20the%20market%20move%20today%3F" style={{ fontWeight: 600, marginTop: 'auto' }}>Why? Ask the agent →</Link>
           </section>
         </section>
