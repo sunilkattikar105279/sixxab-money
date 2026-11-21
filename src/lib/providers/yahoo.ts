@@ -44,7 +44,7 @@ export async function yahooBars(symbol: string, tf: '1m' | '5m' | '15m' | '1h' |
         if (tf === '1d' && last && start != null && end != null && t >= start - 86_400 && t <= end) {
           // Today's daily bar: keep it only once the session has closed (never a mid-session price as a "close"),
           // and fill it from the quote summary because Yahoo often leaves the bar's own close empty for hours.
-          if (now < end) return;
+          if (now < end && !y.includes('=')) return; // futures (gold, Brent) trade nearly round the clock: keep the latest settle
           if (c == null && m?.regularMarketPrice != null && (m.regularMarketTime ?? 0) >= start) {
             c = m.regularMarketPrice; h = h ?? m.regularMarketDayHigh ?? c; l = l ?? m.regularMarketDayLow ?? c;
             o = o ?? bars.at(-1)?.c ?? c;
