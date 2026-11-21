@@ -82,7 +82,7 @@ export function EmpireTimeline({ now = new Date().getUTCFullYear() }: { now?: nu
             <text x={pl - 10} y={y + 18} textAnchor="end" fontSize={13} fontWeight={700} fill="#fff">{e.name}</text>
             <rect x={X(e.from)} y={y} width={X(end) - X(e.from)} height={26} rx={6} fill={cols[i]} fillOpacity={0.85} />
             {!e.to && <rect x={X(end)} y={y} width={X(2060) - X(end)} height={26} rx={6} fill={cols[i]} fillOpacity={0.15} strokeDasharray="4 4" stroke={cols[i]} />}
-            <text x={X(e.from) + 8} y={y + 18} fontSize={12} fontWeight={700} fill="#0b1b33">{e.from}–{e.to ?? 'today'} · {end - e.from} yrs</text>
+            <text x={X(e.from) + 6} y={y + 17} fontSize={11} fontWeight={700} fill="#0b1b33">{e.from}–{e.to ?? 'now'} · {end - e.from}y</text>
           </g>
         );
       })}

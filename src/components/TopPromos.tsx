@@ -64,7 +64,7 @@ export async function TopPromos() {
       </Card>
       <Card tag="Pulse · Market sentiment" title="Fear or greed, in one number"
         points={['One score for the US, India and the world', 'Where money is moving between markets', 'Volatility, trend, breadth, credit, gold']}
-        actions={<Link href="/sentiment" className="btn">Check the market mood</Link>}>
+        actions={<Link href="/sentiment" className="btn">Check the market mood</Link>} video={promo('pulse')}>
         {mood ? <div style={{ textAlign: 'center' }}>
           <Dial score={mood.score} size={170} label="SIXXAB Sentiment" />
           <div style={{ color: MOOD_COL[mood.mood], fontWeight: 800, textTransform: 'uppercase', fontSize: 13, letterSpacing: 1 }}>{mood.mood}</div>

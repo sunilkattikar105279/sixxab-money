@@ -29,11 +29,12 @@ export const LIBRARY: Video[] = [
 ];
 
 /** Agent promo reels linked from the home page cards (ids 'quant' and 'delta'); add an entry once each promo is posted. */
-export interface Promo { id: 'coach' | 'quant' | 'delta'; url: string; poster: string; title: string }
+export interface Promo { id: 'coach' | 'quant' | 'delta' | 'pulse'; url: string; poster: string; title: string }
 const VM = 'https://media.viewmax.io/users/5CsPXUOC6B2P2tCfo9UCiuCFJXw4Limz/sora-videos/';
 export const PROMOS: Promo[] = [
   { id: 'coach', url: `${VM}cgt-20261118211156-xeg6d/6e5ed2e8-7853-4009-935e-01f56ecebacf.mp4`, poster: `${VM}cgt-20261118211156-xeg6d/6fcc2eae-5d9a-4fd9-a06f-182e8a21c974.first.jpg`, title: 'Your personal money coach in 15 seconds' },
   { id: 'quant', url: `${VM}cgt-20261118210145-dmias/dd4b90ba-1d0d-473b-98db-93dd6c2525a3.mp4`, poster: `${VM}cgt-20261118210145-dmias/091220dd-b264-479d-8162-1bc45c04a435.first.jpg`, title: 'Quant screener in 15 seconds' },
+  { id: 'pulse', url: `${VM}cgt-20261122050032-zjyug/40066457-dc09-4183-ac6a-2487c59c7678.mp4`, poster: `${VM}cgt-20261122050032-zjyug/46d61833-c4a3-4f16-b725-aa526d9b2ea9.first.jpg`, title: 'Pulse market sentiment in 15 seconds' },
   { id: 'delta', url: `${VM}cgt-20261118210153-9airt/b287721e-fdc3-4a01-9871-bed223abf654.mp4`, poster: `${VM}cgt-20261118210153-9airt/c9a979b4-04e7-4749-88a5-03276e8d66c5.first.jpg`, title: 'Delta money-move manager in 15 seconds' },
 ];
 
