@@ -206,3 +206,9 @@ input[type='range'] { accent-color: var(--teal); min-height: 28px; padding: 0; b
 .sentiment-row { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; }
 .sentiment-regions { flex: 1; min-width: 260px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
 .sentiment-regions p { grid-column: 1 / -1; }
+
+/* Epoch · money history */
+.cycle-row { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.money-forms { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.money-forms li { border-left: 3px solid var(--gold); padding: 4px 10px; }
+.roadmap { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-top: 14px; }

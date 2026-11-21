@@ -9,6 +9,7 @@ describe('agent team', () => {
     expect(agent('sigma').role).toBe('Risk meter');
     expect(tagOf('pulse')).toBe('Pulse · Market sentiment');
     expect(agent('pulse').href).toBe('/sentiment');
+    expect(tagOf('epoch')).toBe('Epoch · Money history');
   });
   it('names every domain agent from the team', () => {
     const names = new Set(TEAM.map((a) => a.name));

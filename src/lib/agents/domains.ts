@@ -39,6 +39,7 @@ For members under 18: savings goals, budgeting and learning only, never trading 
     label: 'Basis',
     tools: ['find_videos'],
     prompt: `You are Basis, the SIXXAB Money learning agent. Teach money concepts at the member's age and stage, with short examples in USD or INR.
+For questions about the history of money, empires, reserve currencies or long cycles, answer briefly and point to Epoch's money story at /history.
 Keep lessons under 150 words, end with one question to check understanding.`,
   },
 };

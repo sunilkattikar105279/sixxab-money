@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: 'Meet the agents · SIXXAB Money', de
 
 const GROUPS: { title: string; keys: string[] }[] = [
   { title: 'Market analysis', keys: ['quant', 'sigma', 'pulse', 'delta', 'pivot', 'moat'] },
-  { title: 'Briefs and context', keys: ['tape', 'macro', 'geo'] },
+  { title: 'Briefs and context', keys: ['tape', 'macro', 'geo', 'epoch'] },
   { title: 'Your money journey', keys: ['mentor', 'basis'] },
   { title: 'Safety', keys: ['audit'] },
 ];
@@ -19,7 +19,7 @@ export default function Agents() {
       <main className="wrap" id="main">
         <section className="card">
           <div className="tag teal">The SIXXAB Money agent team</div>
-          <h1 style={{ fontSize: 28, margin: '6px 0' }}>Twelve specialist agents, one coach</h1>
+          <h1 style={{ fontSize: 28, margin: '6px 0' }}>Thirteen specialist agents, one coach</h1>
           <p className="muted" style={{ margin: 0 }}>Ask a question or open a page and an orchestrator routes it to the right specialist. Each agent is named after the financial idea it works with, and every answer passes Audit before you see it. All {POWERED_BY}.</p>
           <svg viewBox="0 0 760 210" width="100%" role="img" aria-label="You ask, the orchestrator routes to specialist agents, Audit checks the answer, you get it" style={{ marginTop: 12 }}>
             {[['You ask', 20], ['Orchestrator', 170], ['Specialist agents', 330], ['Audit', 500], ['Your answer', 630]].map(([t, x], i) => (
@@ -31,7 +31,7 @@ export default function Agents() {
             {[[140, 170], [290, 330], [480, 500], [620, 630]].map(([a, b]) => <path key={a} d={`M${a} 105 H${b - 4}`} stroke="var(--teal)" strokeWidth={1.5} markerEnd="url(#ag-arrow)" />)}
             <defs><marker id="ag-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--teal)" /></marker></defs>
             <text x={405} y={60} textAnchor="middle" fontSize={11.5} fill="var(--muted)">Quant · Sigma · Pulse · Delta · Pivot · Moat</text>
-            <text x={405} y={155} textAnchor="middle" fontSize={11.5} fill="var(--muted)">Tape · Macro · Geo · Mentor · Basis</text>
+            <text x={405} y={155} textAnchor="middle" fontSize={11.5} fill="var(--muted)">Tape · Macro · Geo · Epoch · Mentor · Basis</text>
             <text x={560} y={175} textAnchor="middle" fontSize={11.5} fill="var(--muted)">sources, balance, no buy/sell calls</text>
           </svg>
         </section>
