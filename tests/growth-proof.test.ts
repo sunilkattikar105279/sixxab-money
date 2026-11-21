@@ -23,10 +23,11 @@ describe('stages and curriculum', () => {
     expect(weekOf('2026-08-01T00:00:00Z', now)).toBeLessThanOrEqual(12);
   });
   it('writes the day-0 welcome email with the stage and first lesson', () => {
-    const e = welcomeEmail('welcome_d0', { name: 'Asha Rao', stage: 3, referralCode: 'abc123', foundingNumber: 7 });
+    const e = welcomeEmail('welcome_d0', { id: '0f8fad5b-d9cb-469f-a165-70867728950e', name: 'Asha Rao', stage: 3, referralCode: 'abc123', foundingNumber: 7 });
     expect(e.subject).toMatch(/Stage 3/);
     expect(e.html).toMatch(/founding member #7/);
     expect(e.html).toMatch(/Emergency fund/);
+    expect(e.html).toMatch(/api\/unsubscribe\?u=0f8fad5b-d9cb-469f-a165-70867728950e&t=[0-9a-f]{32}/);
   });
 });
 
