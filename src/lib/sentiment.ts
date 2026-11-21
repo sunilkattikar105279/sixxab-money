@@ -160,7 +160,7 @@ export function readSentiment(s: Series, breadth: { US?: number | null; IN?: num
   ].filter((x) => Number.isFinite(x.pct)).map((x) => ({ ...x, pct: Math.round(x.pct * 10) / 10, read: x.pct > 2 ? 'money favouring the first' : x.pct < -2 ? 'money favouring the second' : 'about even' }));
   const notes: string[] = [];
   const cIn = corr60.find((x) => x.pair.startsWith('S&P 500 · Nifty'));
-  if (cIn) notes.push(cIn.value < 0.3 ? `India and the US have moved largely independently over 60 days (correlation ${cIn.value.toFixed(2)}): India's rally is driven by its own money, mostly domestic.` : `India and the US have moved together over 60 days (correlation ${cIn.value.toFixed(2)}): a US sell-off tends to reach India.`);
+  if (cIn) notes.push(cIn.value < 0.3 ? `India and the US have moved largely independently over 60 days (correlation ${cIn.value.toFixed(2)}): India is following its own drivers, not Wall Street.` : `India and the US have moved together over 60 days (correlation ${cIn.value.toFixed(2)}): a US sell-off tends to reach India.`);
   const g = relative.find((x) => x.label.startsWith('Gold'));
   if (g && g.pct > 5) notes.push(`Gold has beaten the S&P 500 by ${g.pct.toFixed(1)} points over 3 months: big money is paying up for safety.`);
 
