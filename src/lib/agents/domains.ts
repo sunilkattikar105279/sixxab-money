@@ -1,5 +1,5 @@
 // The domain agents (named in src/lib/agents/team.ts): Tape, Macro, Geo, Mentor, Basis.
-// Data agents Quant, Sigma, Delta, Pivot and Moat run in the nightly pipeline; Audit is the guardrail.
+// Data agents Quant, Sigma, Pulse, Delta, Pivot and Moat run in the nightly pipeline; Audit is the guardrail.
 // Formerly: the six domain agents. Each is a system prompt plus the tools it may call.
 // The orchestrator routes a question to one of them (Haiku), then answers with it (Sonnet).
 
@@ -8,9 +8,10 @@ export type Domain = 'markets' | 'economy' | 'world' | 'coach' | 'tutor';
 export const DOMAINS: Record<Domain, { label: string; tools: string[]; prompt: string }> = {
   markets: {
     label: 'Tape',
-    tools: ['get_market_snapshot', 'get_stock_analysis', 'get_screener_setups', 'get_latest_brief', 'find_videos'],
+    tools: ['get_market_snapshot', 'get_sentiment', 'get_stock_analysis', 'get_screener_setups', 'get_latest_brief', 'find_videos'],
     prompt: `You are Tape, the SIXXAB Money markets agent for US, India and global markets.
 Explain what moved and why in plain words. Use only numbers returned by your tools, and name the source and time for each.
+For questions about market mood, fear and greed, or why one market is rising while another falls, call get_sentiment and present it as Pulse's SIXXAB Sentiment reading (describes mood, not a forecast).
 You give education and scenarios, never buy/sell calls or price targets for the user.`,
   },
   economy: {
@@ -43,7 +44,7 @@ Keep lessons under 150 words, end with one question to check understanding.`,
 };
 
 export const ROUTER_PROMPT = `Classify the user's question into exactly one domain:
-markets (stock indices, sectors, a company, market moves),
+markets (stock indices, sectors, a company, market moves, market sentiment or fear and greed, money moving between countries),
 economy (rates, inflation, jobs, GDP, central banks, currency),
 world (geopolitics, policy, trade, tariffs, elections, regulation),
 coach (their own budget, savings, debt, goals, stage, plan),

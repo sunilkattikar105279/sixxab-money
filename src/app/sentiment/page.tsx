@@ -4,7 +4,7 @@ import { getSentiment } from '@/lib/data/regime';
 import { Dial, MOOD_COL } from '@/components/SentimentGauge';
 import type { SentimentRead } from '@/lib/sentiment';
 
-export const metadata: Metadata = { title: 'SIXXAB Sentiment', description: 'One fear-and-greed score for the US, India and world markets, with the money flows behind it.' };
+export const metadata: Metadata = { title: 'Pulse · SIXXAB Sentiment', description: 'One fear-and-greed score for the US, India and world markets, with the money flows behind it.' };
 export const revalidate = 600;
 
 function HistoryChart({ h }: { h: SentimentRead['history'] }) {
@@ -33,8 +33,8 @@ export default async function Sentiment() {
       <Header active="Sentiment" />
       <main className="wrap" id="main">
         <section className="bar">
-          <span className="tag gold">SIXXAB Sentiment{s ? ` · as of ${s.asOf} close` : ''}</span>
-          <span style={{ flex: '1 1 480px' }}>One 0 to 100 read of investor mood: 0 is extreme fear, 100 is extreme greed. It blends the US (50%), the rest of the world (30%) and India (20%), using volatility, trend, momentum, breadth, credit, the dollar, the rupee and gold. It describes the mood; it does not predict tomorrow. Educational, not financial advice.</span>
+          <span className="tag gold">Pulse · SIXXAB Sentiment{s ? ` · as of ${s.asOf} close` : ''}</span>
+          <span style={{ flex: '1 1 480px' }}>Pulse, the SIXXAB Money sentiment agent, publishes one 0 to 100 read of investor mood: 0 is extreme fear, 100 is extreme greed. It blends the US (50%), the rest of the world (30%) and India (20%), using volatility, trend, momentum, breadth, credit, the dollar, the rupee and gold. It describes the mood; it does not predict tomorrow. Educational, not financial advice.</span>
         </section>
         {!s ? (
           <section className="card"><p className="muted" style={{ margin: 0 }}>The first SIXXAB Sentiment read appears here after tonight’s market update.</p></section>

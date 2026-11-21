@@ -24,8 +24,8 @@ export function Dial({ score, size = 220, label }: { score: number; size?: numbe
 export function SentimentCard({ s }: { s: SentimentRead | null }) {
   if (!s) return null;
   return (
-    <section className="card sentiment-card" aria-label="SIXXAB Sentiment">
-      <div className="tag gold">SIXXAB Sentiment · {s.asOf}</div>
+    <section className="card sentiment-card" id="sentiment" aria-label="Pulse · SIXXAB Sentiment">
+      <div className="tag gold">Pulse · SIXXAB Sentiment · {s.asOf}</div>
       <div className="sentiment-row">
         <div style={{ textAlign: 'center', minWidth: 180 }}>
           <Dial score={s.score} size={200} />

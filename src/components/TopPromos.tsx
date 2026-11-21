@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import { getSentiment } from '@/lib/data/regime';
+import { Dial, MOOD_COL } from '@/components/SentimentGauge';
 import { getMember } from '@/lib/member';
 import { stageOf } from '@/lib/sixs';
 import { foundingStats } from '@/lib/growth-server';
@@ -24,7 +26,7 @@ function Card({ tag, title, points, children, actions, video, gold }: { tag: str
 
 /** The three headline promos: personal money coach, Quant screener, Delta money-move manager. */
 export async function TopPromos() {
-  const [m, stats, rot] = await Promise.all([getMember(), foundingStats(), getRotation('US')]);
+  const [m, stats, rot, mood] = await Promise.all([getMember(), foundingStats(), getRotation('US'), getSentiment()]);
   const promo = (id: Promo['id']) => PROMOS.find((p) => p.id === id);
   const member = m?.member ?? null;
   const left = stats?.left ?? FOUNDING_SPOTS;
@@ -59,6 +61,15 @@ export async function TopPromos() {
           {leaders.map((s) => <div key={s.key}><span>{s.name}</span><span className="green mono">Leading</span></div>)}
           {improving.map((s) => <div key={s.key}><span>{s.name}</span><span className="mono" style={{ color: 'var(--teal)' }}>Improving</span></div>)}
         </> : <div className="dim">Sector read appears after tonight’s update.</div>}</div>
+      </Card>
+      <Card tag="Pulse · Market sentiment" title="Fear or greed, in one number"
+        points={['One score for the US, India and the world', 'Where money is moving between markets', 'Volatility, trend, breadth, credit, gold']}
+        actions={<Link href="/sentiment" className="btn">Check the market mood</Link>}>
+        {mood ? <div style={{ textAlign: 'center' }}>
+          <Dial score={mood.score} size={170} label="SIXXAB Sentiment" />
+          <div style={{ color: MOOD_COL[mood.mood], fontWeight: 800, textTransform: 'uppercase', fontSize: 13, letterSpacing: 1 }}>{mood.mood}</div>
+          <div className="mini-rows" style={{ marginTop: 6 }}>{mood.regions.map((r) => <div key={r.region}><span>{r.name}</span><span className="mono" style={{ color: MOOD_COL[r.mood] }}>{r.score}</span></div>)}</div>
+        </div> : <div className="dim">The first sentiment read appears after tonight’s update.</div>}
       </Card>
     </section>
   );

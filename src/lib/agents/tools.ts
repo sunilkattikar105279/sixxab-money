@@ -5,6 +5,7 @@ import { macroSnapshot, macroBrief } from '../data/macro';
 import { adminClient } from '../supabase/admin';
 import { searchVideos } from '../media';
 import { levelsAllowed } from '../compliance';
+import { getSentiment } from '../data/regime';
 
 export interface ToolOut {
   data: unknown;
@@ -17,6 +18,11 @@ const ALL: Record<string, Anthropic.Tool> = {
     name: 'get_market_snapshot',
     description: 'Latest stored close for the main indices of a market, with source and timestamp.',
     input_schema: { type: 'object', properties: { market: { type: 'string', enum: ['US', 'IN', 'GLOBAL'] } }, required: ['market'] },
+  },
+  get_sentiment: {
+    name: 'get_sentiment',
+    description: "Pulse's latest SIXXAB Sentiment: 0-100 fear/greed for the US, India and the rest of the world, each signal behind it, Wyckoff phases, 60-day correlations and 3-month money-flow gaps.",
+    input_schema: { type: 'object', properties: {} },
   },
   get_indicator: {
     name: 'get_indicator',
@@ -69,6 +75,12 @@ export async function runTool(name: string, input: Record<string, unknown>, opts
     case 'get_market_snapshot': {
       const snap = await getSnapshot(String(input.market || 'US') as 'US' | 'IN' | 'GLOBAL');
       return { data: snap, sources: [{ name: snap.source, asOf: snap.asOf }] };
+    }
+    case 'get_sentiment': {
+      const s = await getSentiment();
+      if (!s) return { data: { error: 'SIXXAB Sentiment has not run yet' }, sources: [] };
+      const { history: _h, ...rest } = s;
+      return { data: { ...rest, last30: s.history.slice(-30).map((p) => ({ date: p.date, score: p.score })) }, sources: [{ name: 'SIXXAB Money · Pulse (Yahoo Finance delayed data)', asOf: s.asOf }] };
     }
     case 'get_indicator': {
       const v = await getIndicator(String(input.key));
