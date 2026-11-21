@@ -29,6 +29,15 @@ export async function checks(): Promise<Check[]> {
       const j = (await r.json()) as { external?: { email?: boolean; phone?: boolean } };
       return `email sign-in ${j.external?.email ? 'on' : 'off'} · phone ${j.external?.phone ? 'on' : 'off'}`;
     }),
+    run('Email (Resend)', 'RESEND_API_KEY, EMAIL_FROM', has('RESEND_API_KEY'), async () => {
+      const r = await fetch('https://api.resend.com/domains', { headers: { authorization: `Bearer ${process.env.RESEND_API_KEY}` }, signal: t() });
+      if (r.status === 401 || r.status === 403) return 'key set (sending-only key, so domain status is not visible here)';
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const j = (await r.json()) as { data?: { name: string; status: string }[] };
+      const d = (j.data ?? []).map((x) => `${x.name} ${x.status}`);
+      if (!d.some((x) => x.endsWith('verified'))) throw new Error(d.length ? `domain not verified: ${d.join(', ')}` : 'no sending domain added');
+      return `connected · ${d.join(', ')}`;
+    }),
     run('Claude API (agents)', 'ANTHROPIC_API_KEY', has('ANTHROPIC_API_KEY'), async () => {
       const page = await new Anthropic().models.list({ limit: 20 });
       const ids = page.data.map((m) => m.id);

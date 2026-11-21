@@ -23,8 +23,8 @@ async function main() {
       if (!emailConfigured()) continue;
       const { data: u } = await db.auth.admin.getUserById(m.id);
       const to = u?.user?.email; if (!to) continue;
-      const { subject, html } = welcomeEmail(step.kind, { name: m.full_name, stage: m.stage, referralCode: m.referral_code, foundingNumber: m.founding_number });
-      if (await sendEmail(to, subject, html)) { ok++; await db.from('email_log').insert({ member_id: m.id, kind: step.kind }); }
+      const { subject, html } = welcomeEmail(step.kind, { id: m.id, name: m.full_name, stage: m.stage, referralCode: m.referral_code, foundingNumber: m.founding_number });
+      if (await sendEmail(to, subject, html, m.id)) { ok++; await db.from('email_log').insert({ member_id: m.id, kind: step.kind }); }
     }
   }
   console.log(`welcome emails: ${due} due, ${ok} sent${emailConfigured() ? '' : ' (RESEND_API_KEY not set, nothing sent)'}`);

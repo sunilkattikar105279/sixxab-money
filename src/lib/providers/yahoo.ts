@@ -20,7 +20,8 @@ const INTERVAL: Record<string, string> = { '1m': '1m', '5m': '5m', '15m': '15m',
 // Yahoo caps intraday history: 1m ≈ 7 days, 5m/15m ≈ 60 days, 60m ≈ 730 days
 const MAX_DAYS: Record<string, number> = { '1m': 7, '5m': 59, '15m': 59, '1h': 729, '1d': 3650 };
 
-type Chart = { chart?: { result?: { timestamp?: number[]; indicators?: { quote?: { open: (number | null)[]; high: (number | null)[]; low: (number | null)[]; close: (number | null)[]; volume: (number | null)[] }[] } }[] } };
+type Meta = { regularMarketPrice?: number; regularMarketTime?: number; regularMarketDayHigh?: number; regularMarketDayLow?: number; regularMarketVolume?: number; currentTradingPeriod?: { regular?: { start: number; end: number } } };
+type Chart = { chart?: { result?: { meta?: Meta; timestamp?: number[]; indicators?: { quote?: { open: (number | null)[]; high: (number | null)[]; low: (number | null)[]; close: (number | null)[]; volume: (number | null)[] }[] } }[] } };
 
 export async function yahooBars(symbol: string, tf: '1m' | '5m' | '15m' | '1h' | '1d', fromISO: string): Promise<Bar[]> {
   const y = yahooSymbol(symbol); if (!y) return [];
@@ -36,10 +37,21 @@ export async function yahooBars(symbol: string, tf: '1m' | '5m' | '15m' | '1h' |
       const ts = r?.timestamp ?? [], q = r?.indicators?.quote?.[0];
       if (!q) return [];
       const bars: Bar[] = [];
+      const m = r?.meta, end = m?.currentTradingPeriod?.regular?.end, start = m?.currentTradingPeriod?.regular?.start;
       ts.forEach((t, i) => {
-        const o = q.open[i], h = q.high[i], l = q.low[i], c = q.close[i];
+        let o = q.open[i], h = q.high[i], l = q.low[i], c = q.close[i];
+        const last = i === ts.length - 1;
+        if (tf === '1d' && last && start != null && end != null && t >= start - 86_400 && t <= end) {
+          // Today's daily bar: keep it only once the session has closed (never a mid-session price as a "close"),
+          // and fill it from the quote summary because Yahoo often leaves the bar's own close empty for hours.
+          if (now < end) return;
+          if (c == null && m?.regularMarketPrice != null && (m.regularMarketTime ?? 0) >= start) {
+            c = m.regularMarketPrice; h = h ?? m.regularMarketDayHigh ?? c; l = l ?? m.regularMarketDayLow ?? c;
+            o = o ?? bars.at(-1)?.c ?? c;
+          }
+        }
         if (o == null || h == null || l == null || c == null) return;
-        bars.push({ t: t * 1000, o, h, l, c, v: q.volume[i] ?? 0 });
+        bars.push({ t: t * 1000, o, h, l, c, v: q.volume[i] ?? (last ? m?.regularMarketVolume ?? 0 : 0) });
       });
       await new Promise((r) => setTimeout(r, 300)); // gentle pacing
       return bars;

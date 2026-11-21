@@ -20,11 +20,12 @@ export default function Login() {
     if (q.get('join') || q.get('ref')) setMode('up');
     const ref = q.get('ref');
     if (ref && /^[a-z0-9]{4,16}$/i.test(ref)) try { localStorage.setItem('sixxab_ref', ref.toLowerCase()); } catch { /* storage off */ }
+    if (q.get('error') === 'link') setMsg('That sign-in link has expired or was already used. Enter your email to get a new one.');
     const n = q.get('next');
     if (n && n.startsWith('/') && !n.startsWith('//')) setNext(n);
   }, []);
 
-  const redirect = () => `${location.origin}/auth/callback`;
+  const redirect = () => `${location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault(); setBusy(true); setMsg(null);
