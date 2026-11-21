@@ -11,7 +11,8 @@ import { Breadth } from '@/components/Breadth';
 import { TopMovers } from '@/components/TopMovers';
 import { policyBriefs } from '@/lib/data/policy';
 import { RiskMeter } from '@/components/RiskMeter';
-import { getRegime } from '@/lib/data/regime';
+import { getRegime, getSentiment } from '@/lib/data/regime';
+import { SentimentCard } from '@/components/SentimentGauge';
 import { JourneyPath, type JourneyProgress } from '@/components/JourneyPath';
 import { getMember } from '@/lib/member';
 import { TopPromos, BriefMini, fmtDay } from '@/components/TopPromos';
@@ -52,7 +53,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ m
   const { m } = await searchParams;
   const market: Market = m === 'IN' || m === 'GLOBAL' ? m : 'US';
   const [snap, brief, board, briefs, briefIN, briefGL] = await Promise.all([getSnapshot(market), latestBrief('US'), getStocks(market), videos({ topic: 'daily-brief', limit: 1 }), latestBrief('IN'), latestBrief('GLOBAL')]);
-  const [breadth, briefsList, regime] = await Promise.all([getBreadth(market, board), policyBriefs(undefined, 3), market === 'GLOBAL' ? Promise.resolve(null) : getRegime(market)]);
+  const [breadth, briefsList, regime, sentiment] = await Promise.all([getBreadth(market, board), policyBriefs(undefined, 3), market === 'GLOBAL' ? Promise.resolve(null) : getRegime(market), getSentiment()]);
   const journey = await memberJourney();
   const [today] = briefs;
   const thumb = today ? await briefThumb(today.id) : null;
@@ -92,6 +93,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ m
           ))}
         </section>
 
+        <SentimentCard s={sentiment} />
         {market !== 'GLOBAL' && <RiskMeter r={regime} />}
 
         <Breadth bars={breadth} />

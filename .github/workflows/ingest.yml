@@ -35,5 +35,6 @@ jobs:
           else case "${{ github.event.schedule }}" in "19 10 * * 1-5"|"41 12 * * 1-5") M="IN";; *) M="US";; esac; fi
           npx tsx scripts/ingest.ts "$M"
           if [ "$M" = "US" ]; then npx tsx scripts/ingest.ts GLOBAL; fi
+          npx tsx scripts/sentiment.ts || echo "sentiment failed (non-blocking)"
           npx tsx scripts/sync-videos.ts || echo "video sync failed (non-blocking)"
           npx tsx scripts/welcome-emails.ts || echo "welcome emails step failed (non-blocking)"

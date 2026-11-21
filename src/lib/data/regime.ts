@@ -22,3 +22,14 @@ export async function getPivot(): Promise<import('../pivot').PivotBoard | null> 
     return null;
   } catch { return null; }
 }
+
+/** Latest SIXXAB Sentiment (stored with the US risk meter row), or null before the first run. */
+export async function getSentiment(): Promise<import('../sentiment').SentimentRead | null> {
+  try {
+    const db = adminClient();
+    if (!db) return null;
+    const { data } = await db.from('market_regime').select('data').eq('market', 'US').order('as_of', { ascending: false }).limit(5);
+    for (const row of data ?? []) { const s = (row.data as { sentiment?: import('../sentiment').SentimentRead }).sentiment; if (s?.regions?.length) return s; }
+    return null;
+  } catch { return null; }
+}

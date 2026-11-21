@@ -4,7 +4,7 @@ import { memberClient } from '@/lib/supabase/server';
 
 // [page key used by `active`, link, agent name, what it does]; agent names come from the team registry
 const PUBLIC_TABS = [
-  ['Home', '/', 'Home', ''], ['Screener', '/screener', 'Quant', 'Screener'], ['Sectors', '/sectors', 'Delta', 'Sectors'], ['Levels', '/levels', 'Pivot', 'Levels'],
+  ['Home', '/', 'Home', ''], ['Screener', '/screener', 'Quant', 'Screener'], ['Sectors', '/sectors', 'Delta', 'Sectors'], ['Levels', '/levels', 'Pivot', 'Levels'], ['Sentiment', '/sentiment', 'Sigma', 'Sentiment'],
   ['Economy', '/economy', 'Macro', 'Economy'], ['World & Policy', '/world', 'Geo', 'World & policy'], ['Maps', '/maps', 'Maps', ''], ['Journey', '/journey', 'Journey', ''], ['Learn', '/learn', 'Basis', 'Learn'], ['Agents', '/agents', 'Agents', ''],
 ] as const;
 

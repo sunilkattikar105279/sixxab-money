@@ -12,6 +12,7 @@ const INDEX: Record<string, string> = {
 /** 'NSE_INDEX|Nifty 50' → '^NSEI'; 'RELIANCE' → 'RELIANCE.NS'; 'M&M' → 'M%26M.NS' after encoding. */
 export function yahooSymbol(symbol: string): string | null {
   if (symbol.startsWith('^') || symbol.includes('=')) return symbol; // already a Yahoo symbol (global indexes, futures)
+  if (symbol.startsWith('US:')) return symbol.slice(3); // US-listed ETF or other Yahoo symbol as is (US:SPY, US:DX-Y.NYB)
   if (symbol.includes('|')) { const name = symbol.split('|')[1]; return INDEX[name] ?? null; }
   return `${symbol}.NS`;
 }
