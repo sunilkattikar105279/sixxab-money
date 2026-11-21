@@ -2,7 +2,7 @@
 export const SITE = {
   name: 'SIXXAB Money',
   url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://money.sixxab.com',
-  operator: process.env.NEXT_PUBLIC_OPERATOR ?? 'SIXXAB AI',
+  operator: process.env.NEXT_PUBLIC_OPERATOR ?? 'SIXXAB LLC',
   contactEmail: process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? 'support@sunilkattikar.com',
   /** Physical mailing address required in marketing email (CAN-SPAM). Set NEXT_PUBLIC_POSTAL_ADDRESS on Vercel and in GitHub secrets. */
   postalAddress: process.env.NEXT_PUBLIC_POSTAL_ADDRESS ?? '',
