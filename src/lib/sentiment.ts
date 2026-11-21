@@ -178,7 +178,7 @@ export function readSentiment(s: Series, breadth: { US?: number | null; IN?: num
     history.push({ date: dates[end - 1], score: round(sc), us: round(u), in: round(i), global: round(w) });
   }
 
-  const asOf = dayKey(s.spx[s.spx.length - 1].t);
+  const asOf = dayKey(s.spx!.at(-1)!.t);
   const byR = Object.fromEntries(regions.map((r) => [r.region, r]));
   const summary = `SIXXAB Sentiment ${score} (${moodOf(score)}). US ${byR.US?.score ?? '—'} (${byR.US?.mood ?? '—'}), India ${byR.IN?.score ?? '—'} (${byR.IN?.mood ?? '—'}), rest of the world ${byR.GLOBAL?.score ?? '—'} (${byR.GLOBAL?.mood ?? '—'}).`;
   return { asOf, score, mood: moodOf(score), weights: WEIGHTS, regions, flows: { corr60, relative, notes }, history, summary };

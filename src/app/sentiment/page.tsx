@@ -96,7 +96,7 @@ export default async function Sentiment() {
           </>
         )}
       </main>
-      <Footer />
+      <Footer note="SIXXAB Sentiment is built from public prices, volatility and breadth (Yahoo Finance, delayed). It describes investor mood and is not a forecast or a recommendation." />
     </>
   );
 }
