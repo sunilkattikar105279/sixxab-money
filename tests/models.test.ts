@@ -72,3 +72,11 @@ describe('goals and LRS', () => {
     expect(lrsHeadroom(300_000)).toBe(0);
   });
 });
+
+describe('alignment across time stamps', () => {
+  it('matches bars stamped at midnight IST and at the 09:15 open on the same local day', () => {
+    const open = Date.UTC(2024, 0, 2, 3, 45), midnightIst = Date.UTC(2024, 0, 1, 18, 30);
+    const a = align({ x: { t: [open], c: [1] }, y: { t: [midnightIst], c: [2] } }, 330 * 60_000);
+    expect(a.t).toHaveLength(1);
+  });
+});

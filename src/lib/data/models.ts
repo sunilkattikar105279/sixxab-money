@@ -9,7 +9,8 @@ export interface ModelHistory {
   prices: Record<string, number>;           // latest close per asset key (for paper portfolios)
   stats: Partial<Record<ModelKey, HistoryStats>>;
   missing: string[];                         // proxies with no price history from the feed
-  days: number;                              // trading days shared by every proxy
+  days: number;
+  counts: Record<string, number>;             // bars received per asset                              // trading days shared by every proxy
 }
 
 const YEARS = 5;
@@ -25,8 +26,8 @@ async function load(market: ModelMarket): Promise<ModelHistory> {
     } catch { /* a missing proxy only removes that asset from the history */ }
   }));
   const complete = set.assets.every((a) => series[a.key]);
-  const aligned = align(series);
-  const out: ModelHistory = { market, available: complete && aligned.t.length > 250, asOf: aligned.t.length ? new Date(aligned.t[aligned.t.length - 1]).toISOString().slice(0, 10) : null, prices, stats: {}, missing: set.assets.filter((a) => !series[a.key]).map((a) => a.proxy), days: aligned.t.length };
+  const aligned = align(series, set.fetchMarket === 'IN' ? 330 * 60_000 : 0);
+  const out: ModelHistory = { market, available: complete && aligned.t.length > 250, asOf: aligned.t.length ? new Date(aligned.t[aligned.t.length - 1]).toISOString().slice(0, 10) : null, prices, stats: {}, missing: set.assets.filter((a) => !series[a.key]).map((a) => a.proxy), days: aligned.t.length, counts: Object.fromEntries(Object.entries(series).map(([k, v]) => [k, v.t.length])) };
   if (!out.available) return out;
   for (const m of set.models) {
     const s = stats(rebalancedCurve(m.weights, aligned));
@@ -36,4 +37,4 @@ async function load(market: ModelMarket): Promise<ModelHistory> {
 }
 
 /** Five years of model history per market, recomputed at most every 12 hours. */
-export const modelHistory = (market: ModelMarket) => unstable_cache(() => load(market), ['model-history-v2', market], { revalidate: 43_200 })();
+export const modelHistory = (market: ModelMarket) => unstable_cache(() => load(market), ['model-history-v3', market], { revalidate: 43_200 })();

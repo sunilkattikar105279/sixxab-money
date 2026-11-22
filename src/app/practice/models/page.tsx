@@ -79,7 +79,7 @@ export default async function Models({ searchParams }: { searchParams: Promise<{
             </div>
           </section>
         ) : (
-          <section className="card"><p className="muted" style={{ margin: 0 }}>Five-year history loads from the market data feed. The mixes are below; the history appears once the feed responds.</p>{(h.missing.length > 0 || h.days > 0) && <p className="dim" style={{ margin: '6px 0 0', fontSize: 12 }}>{h.missing.length ? `Waiting on: ${h.missing.join(', ')}.` : ''} {h.days ? `${h.days} shared trading days so far.` : ''}</p>}</section>
+          <section className="card"><p className="muted" style={{ margin: 0 }}>Five-year history loads from the market data feed. The mixes are below; the history appears once the feed responds.</p>{(h.missing.length > 0 || h.days > 0) && <p className="dim" style={{ margin: '6px 0 0', fontSize: 12 }}>{h.missing.length ? `Waiting on: ${h.missing.join(', ')}.` : ''} {h.days ? `${h.days} shared trading days so far (${Object.entries(h.counts).map(([k, n]) => `${k} ${n}`).join(', ')}).` : ''}</p>}</section>
         )}
 
         <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))' }}>

@@ -87,14 +87,15 @@ export interface Series { t: number[]; c: number[] }             // daily closes
 export interface Point { t: number; v: number }
 export interface HistoryStats { start: string; end: string; years: number; growthOf100: number; cagr: number; maxDrawdown: number; drawdownFrom: string; drawdownTo: string; recoveredOn: string | null; worstYear: { year: number; ret: number } | null; bestYear: { year: number; ret: number } | null; curve: Point[] }
 
-const day = (t: number) => Date.UTC(new Date(t).getUTCFullYear(), new Date(t).getUTCMonth(), new Date(t).getUTCDate());
+const day = (t: number, offsetMs = 0) => { const d = new Date(t + offsetMs); return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()); };
 const iso = (t: number) => new Date(t).toISOString().slice(0, 10);
 
-/** Keeps only days every series has, so the mix is priced on the same dates. */
-export function align(series: Record<string, Series>): { t: number[]; c: Record<string, number[]> } {
+/** Keeps only days every series has, so the mix is priced on the same dates. `offsetMs` turns bar times into the
+ *  exchange's local date (India +5:30), since feeds stamp daily bars at midnight local or at the session open. */
+export function align(series: Record<string, Series>, offsetMs = 0): { t: number[]; c: Record<string, number[]> } {
   const keys = Object.keys(series);
   if (!keys.length) return { t: [], c: {} };
-  const maps = keys.map((k) => { const m = new Map<number, number>(); series[k].t.forEach((t, i) => { const v = series[k].c[i]; if (Number.isFinite(v) && v > 0) m.set(day(t), v); }); return m; });
+  const maps = keys.map((k) => { const m = new Map<number, number>(); series[k].t.forEach((t, i) => { const v = series[k].c[i]; if (Number.isFinite(v) && v > 0) m.set(day(t, offsetMs), v); }); return m; });
   const t = [...maps[0].keys()].filter((d) => maps.every((m) => m.has(d))).sort((a, b) => a - b);
   const c: Record<string, number[]> = {};
   keys.forEach((k, i) => { c[k] = t.map((d) => maps[i].get(d)!); });
