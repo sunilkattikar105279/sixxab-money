@@ -32,6 +32,6 @@ describe('Spread credit math', () => {
     const d = creditRegime({ ...base, hy3m: 0.7 });
     expect(d.divergence).toMatch(/Stocks are rising while credit spreads widen/);
     expect(d.scenarios.map((s) => s.odds)).toEqual(['base', 'downside', 'upside']);
-    expect(creditRegime({ ...base, hy: 4.2, hy3m: -0.5 }).name).toBe('Healing');
+    expect(creditRegime({ ...base, hy: 4.2, hy3m: -0.5, ig: 1.2 }).name).toBe('Healing');
   });
 });
