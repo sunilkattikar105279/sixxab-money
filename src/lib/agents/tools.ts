@@ -6,6 +6,7 @@ import { adminClient } from '../supabase/admin';
 import { searchVideos } from '../media';
 import { levelsAllowed } from '../compliance';
 import { getSentiment } from '../data/regime';
+import { creditSnapshot, creditBrief } from '../data/credit';
 
 export interface ToolOut {
   data: unknown;
@@ -22,6 +23,11 @@ const ALL: Record<string, Anthropic.Tool> = {
   get_sentiment: {
     name: 'get_sentiment',
     description: "Pulse's latest SIXXAB Sentiment: 0-100 fear/greed for the US, India and the rest of the world, each signal behind it, Wyckoff phases, 60-day correlations and 3-month money-flow gaps.",
+    input_schema: { type: 'object', properties: {} },
+  },
+  get_credit: {
+    name: 'get_credit',
+    description: "Spread's credit read from FRED: the corporate (HQM) vs Treasury yield curve by maturity now and a year ago, investment-grade and high-yield spreads and yields, the AAA/BBB/HY/CCC rating ladder, Moody's Baa spread, corporate profits (level, growth, share of GDP), corporate debt, correlations with the S&P 500, today's credit backdrop, the stocks-vs-bonds divergence check and scenarios with signposts.",
     input_schema: { type: 'object', properties: {} },
   },
   get_indicator: {
@@ -81,6 +87,10 @@ export async function runTool(name: string, input: Record<string, unknown>, opts
       if (!s) return { data: { error: 'SIXXAB Sentiment has not run yet' }, sources: [] };
       const { history: _h, ...rest } = s;
       return { data: { ...rest, last30: s.history.slice(-30).map((p) => ({ date: p.date, score: p.score })) }, sources: [{ name: 'SIXXAB Money · Pulse (Yahoo Finance delayed data)', asOf: s.asOf }] };
+    }
+    case 'get_credit': {
+      const c = await creditSnapshot();
+      return { data: c.available ? creditBrief(c) : { error: 'FRED key not configured' }, sources: c.available ? [{ name: 'Spread · FRED (US Treasury HQM, ICE BofA, Moody’s, BEA, Federal Reserve)', asOf: c.asOf ?? undefined }] : [] };
     }
     case 'get_indicator': {
       const v = await getIndicator(String(input.key));

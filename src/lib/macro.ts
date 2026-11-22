@@ -38,8 +38,14 @@ export const MACRO: Record<string, SeriesDef> = {
 };
 
 export async function fredSeries(key: string, years = 12): Promise<Obs[]> {
-  const d = MACRO[key], apiKey = process.env.FRED_API_KEY;
-  if (!d || !apiKey) return [];
+  const d = MACRO[key];
+  return d ? fredFetch(d, years) : [];
+}
+
+/** Fetch any FRED series definition, converted to monthly (or quarterly) when `agg` is set. */
+export async function fredFetch(d: SeriesDef, years = 12): Promise<Obs[]> {
+  const apiKey = process.env.FRED_API_KEY;
+  if (!apiKey) return [];
   const start = new Date(Date.now() - years * 365.25 * 864e5).toISOString().slice(0, 10);
   const conv = d.agg ? `&frequency=${d.freq ?? 'm'}&aggregation_method=${d.agg}` : '';
   const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${d.id}&api_key=${apiKey}&file_type=json&observation_start=${start}${conv}`;

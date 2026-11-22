@@ -2,17 +2,18 @@
 // checked against the registry's call matrix and contract version, then logged (handshake_log table).
 import { z } from 'zod';
 
-export const AGENTS = ['orchestrator', 'markets', 'economy', 'world', 'coach', 'tutor', 'calm', 'guardrail', 'learner'] as const;
+export const AGENTS = ['orchestrator', 'markets', 'economy', 'credit', 'world', 'coach', 'tutor', 'calm', 'guardrail', 'learner'] as const;
 export type AgentId = (typeof AGENTS)[number];
 
 export const CONTRACT_VERSION = '1.0';
 
 /** Who may ask whom, for what. Anything not listed is refused. */
 export const CALL_MATRIX: Record<AgentId, Partial<Record<AgentId, string[]>>> = {
-  orchestrator: { markets: ['answer'], economy: ['answer'], world: ['answer'], coach: ['answer'], tutor: ['answer'], calm: ['assess'], guardrail: ['review'] },
-  coach: { calm: ['assess'], markets: ['facts'], economy: ['facts'], tutor: ['lesson'] },
-  markets: { economy: ['facts'] },
-  economy: { markets: ['facts'] },
+  orchestrator: { markets: ['answer'], economy: ['answer'], credit: ['answer'], world: ['answer'], coach: ['answer'], tutor: ['answer'], calm: ['assess'], guardrail: ['review'] },
+  coach: { calm: ['assess'], markets: ['facts'], economy: ['facts'], credit: ['facts'], tutor: ['lesson'] },
+  markets: { economy: ['facts'], credit: ['facts'] },
+  economy: { markets: ['facts'], credit: ['facts'] },
+  credit: { markets: ['facts'], economy: ['facts'] },
   world: { economy: ['facts'] },
   tutor: {},
   calm: {},

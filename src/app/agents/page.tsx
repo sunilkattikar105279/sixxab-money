@@ -19,7 +19,7 @@ export default function Agents() {
       <main className="wrap" id="main">
         <section className="card">
           <div className="tag teal">The SIXXAB Money agent team</div>
-          <h1 style={{ fontSize: 28, margin: '6px 0' }}>Thirteen specialist agents, one coach</h1>
+          <h1 style={{ fontSize: 28, margin: '6px 0' }}>Fourteen specialist agents, one coach</h1>
           <p className="muted" style={{ margin: 0 }}>Ask a question or open a page and an orchestrator routes it to the right specialist. Each agent is named after the financial idea it works with, and every answer passes Audit before you see it. All {POWERED_BY}.</p>
           <svg viewBox="0 0 760 210" width="100%" role="img" aria-label="You ask, the orchestrator routes to specialist agents, Audit checks the answer, you get it" style={{ marginTop: 12 }}>
             {[['You ask', 20], ['Orchestrator', 170], ['Specialist agents', 330], ['Audit', 500], ['Your answer', 630]].map(([t, x], i) => (
