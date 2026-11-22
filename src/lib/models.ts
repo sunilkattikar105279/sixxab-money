@@ -45,7 +45,7 @@ export const MODEL_SETS: Record<ModelMarket, MarketModels> = {
     note: 'History uses NSE-listed index ETFs as stand-ins for each asset class (named for transparency, not as a recommendation). Prices are delayed and not adjusted for small ETF dividends.',
     assets: [
       { key: 'large', label: 'India large caps (Nifty 50)', proxy: 'NIFTYBEES', color: C.us, kind: 'stocks' },
-      { key: 'mid', label: 'India mid caps (Midcap 150)', proxy: 'MID150BEES', color: C.mid, kind: 'stocks' },
+      { key: 'mid', label: 'India next 50 (Nifty Next 50)', proxy: 'JUNIORBEES', color: C.mid, kind: 'stocks' },
       { key: 'global', label: 'US stocks via an Indian fund', proxy: 'MON100', color: C.intl, kind: 'stocks' },
       { key: 'bonds', label: 'Government bonds', proxy: 'GILT5YBEES', color: C.bonds, kind: 'bonds' },
       { key: 'gold', label: 'Gold', proxy: 'GOLDBEES', color: C.gold, kind: 'gold' },

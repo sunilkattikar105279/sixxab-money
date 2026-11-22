@@ -37,4 +37,4 @@ async function load(market: ModelMarket): Promise<ModelHistory> {
 }
 
 /** Five years of model history per market, recomputed at most every 12 hours. */
-export const modelHistory = (market: ModelMarket) => unstable_cache(() => load(market), ['model-history-v3', market], { revalidate: 43_200 })();
+export const modelHistory = (market: ModelMarket) => unstable_cache(() => load(market), ['model-history-v4', market], { revalidate: 43_200 })();
