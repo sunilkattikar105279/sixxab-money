@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { browserClient } from '@/lib/supabase/browser';
 import { track } from '@/lib/track';
+import { SxLogo } from '@/components/SxLogo';
 
 export default function Login() {
   const router = useRouter();
@@ -52,9 +53,8 @@ export default function Login() {
 
   return (
     <main className="wrap" id="main" style={{ maxWidth: 460, paddingTop: 48 }}>
-      <Link href="/" aria-label="SIXXAB Money home">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/sixxab-money-logo.png" alt="SIXXAB Money" style={{ height: 44 }} />
+      <Link href="/" className="sx-logo" aria-label="SIXXAB Money home">
+        <SxLogo unit="MONEY" height={44} />
       </Link>
       <form onSubmit={submit} className="card" style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 20 }}>
         {mode === 'up' && <div className="tag gold">Founding members join free</div>}

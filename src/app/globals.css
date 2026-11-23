@@ -1,25 +1,32 @@
 :root {
-  --bg: #081425; --panel: #0B1B33; --panel2: #0F2342; --line: #1C2E4A; --line2: #22385A;
-  --text: #E6EDF6; --muted: #A9B8CC; --dim: #8FA3BF; --teal: #4FD1B8; --gold: #D4A84B; --red: #FF6B6B; --green: #3EE09A;
-  --mono: 'IBM Plex Mono', ui-monospace, monospace; --head: 'Space Grotesk', Inter, sans-serif;
+  /* SIXXAB family theme: navy, gold leaf, parchment text (matches the SIXXAB School and Library front pages) */
+  --bg: #071426; --panel: #0f2747; --panel2: #13305a; --line: rgba(201,162,39,.22); --line2: rgba(201,162,39,.34);
+  --text: #F3EBD8; --muted: #9fb0c8; --dim: #8FA3BF; --teal: #E7C766; --gold: #C9A227; --red: #FF6B6B; --green: #3EE09A;
+  --mono: 'IBM Plex Mono', ui-monospace, monospace; --head: 'Playfair Display', Georgia, serif; --body: 'Manrope', system-ui, sans-serif;
 }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.5 Inter, system-ui, sans-serif; }
-a { color: var(--teal); text-decoration: none; } a:hover { color: #8BE6D3; }
-h1, h2, h3 { font-family: var(--head); color: #fff; margin: 0; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.5 var(--body); }
+a { color: var(--teal); text-decoration: none; } a:hover { color: var(--text); }
+h1, h2, h3 { font-family: var(--head); color: var(--text); margin: 0; }
 h2 { font-size: 16px; }
 .wrap { max-width: 1400px; margin: 0 auto; padding: 0 24px; }
 .top { background: var(--panel); border-bottom: 1px solid var(--line); }
 .top .row { display: flex; flex-wrap: wrap; align-items: center; gap: 20px; padding: 14px 0; }
 .logo img { height: 40px; display: block; }
+.sx-logo { display: inline-flex; align-items: center; gap: 11px; text-decoration: none; line-height: 1; }
+.sx-logo svg { display: block; }
+.sx-wm { display: flex; flex-direction: column; align-items: stretch; }
+.sx-wm b { font: 700 21px Montserrat, var(--body); letter-spacing: .2em; padding-left: .2em; white-space: nowrap; background: linear-gradient(180deg, #F3D27A, #C8962F); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.sx-wm small { display: flex; align-items: center; gap: 7px; margin-top: 5px; font: 600 10px Montserrat, var(--body); letter-spacing: .34em; padding-left: .34em; color: #E0B95A; white-space: nowrap; }
+.sx-wm small i { flex: 1; height: 1.5px; min-width: 10px; background: #C8962F; display: block; }
 .nav { display: flex; flex-wrap: wrap; gap: 4px; }
 .nav a { padding: 12px 14px; color: var(--muted); }
 .nav a[aria-current='page'] { color: #fff; font-weight: 600; border-bottom: 2px solid var(--teal); }
 .seg { display: flex; background: var(--panel2); border: 1px solid var(--line2); border-radius: 10px; padding: 3px; }
 .seg a { min-height: 38px; min-width: 76px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; color: var(--muted); font-weight: 600; font-size: 13px; }
 .seg a[aria-current='true'] { background: var(--teal); color: #0B1B33; }
-.btn { display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border-radius: 10px; font-weight: 700; border: 0; cursor: pointer; font-size: 14px; }
-.btn-gold { background: var(--gold); color: #0B1B33; }
+.btn { display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border-radius: 999px; font-weight: 700; border: 0; cursor: pointer; font-size: 14px; }
+.btn-gold { background: linear-gradient(180deg, #E7C766, #C9A227); color: #1a1405; }
 .btn-line { background: transparent; border: 1px solid var(--teal); color: var(--teal); }
 main.wrap { padding-top: 20px; padding-bottom: 40px; display: flex; flex-direction: column; gap: 20px; }
 .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }

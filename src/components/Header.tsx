@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { suggestions } from '@/lib/search';
 import { memberClient } from '@/lib/supabase/server';
+import { SxLogo } from '@/components/SxLogo';
 
 // [page key used by `active`, link, agent name, what it does]; agent names come from the team registry
 const PUBLIC_TABS = [
@@ -14,9 +15,8 @@ export async function Header({ active, market }: { active: string; market?: 'US'
   return (
     <header className="top">
       <div className="wrap row">
-        <Link href="/" className="logo" aria-label="SIXXAB Money home">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/sixxab-money-logo.png" alt="SIXXAB Money" />
+        <Link href="/" className="logo sx-logo" aria-label="SIXXAB Money home">
+          <SxLogo unit="MONEY" />
         </Link>
         <form action="/ask" style={{ flex: '1 1 320px' }}>
           <label className="sr" htmlFor="q">Search a ticker, company, country or policy, or ask a question</label>

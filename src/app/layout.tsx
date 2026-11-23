@@ -10,12 +10,12 @@ export const metadata: Metadata = {
   title: { default: 'SIXXAB Money: your money coach for the US and India', template: '%s · SIXXAB Money' },
   description,
   applicationName: SITE.name,
-  icons: { icon: '/sixxab-money-logo.png', apple: '/sixxab-money-logo.png' },
+  icons: { icon: '/sx-icon.svg', apple: '/sixxab-money-logo.png' },
   openGraph: { type: 'website', siteName: SITE.name, title: 'SIXXAB Money: your money coach for the US and India', description, url: '/', images: [{ url: '/sixxab-money-logo.png', alt: 'SIXXAB Money' }] },
   twitter: { card: 'summary', title: 'SIXXAB Money', description, images: ['/sixxab-money-logo.png'] },
 };
 
-export const viewport: Viewport = { themeColor: '#081425', colorScheme: 'dark' };
+export const viewport: Viewport = { themeColor: '#071426', colorScheme: 'dark' };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -30,7 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Manrope:wght@400;500;600;700;800&family=Montserrat:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
       </head>
       <body suppressHydrationWarning>
         <a href="#main" className="skip">Skip to content</a>
