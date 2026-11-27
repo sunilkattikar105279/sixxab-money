@@ -6,7 +6,7 @@ import { SxLogo } from '@/components/SxLogo';
 // [page key used by `active`, link, agent name, what it does]; agent names come from the team registry
 const PUBLIC_TABS = [
   ['Home', '/', 'Home', ''], ['Screener', '/screener', 'Quant', 'Screener'], ['Sectors', '/sectors', 'Delta', 'Sectors'], ['Levels', '/levels', 'Pivot', 'Levels'], ['Sentiment', '/sentiment', 'Pulse', 'Sentiment'],
-  ['Economy', '/economy', 'Macro', 'Economy'], ['Liquidity', '/liquidity', 'Tide', 'Liquidity & M2'], ['Credit', '/credit', 'Spread', 'Credit & profits'], ['World & Policy', '/world', 'Geo', 'World & policy'], ['History', '/history', 'Epoch', 'Money history'], ['Maps', '/maps', 'Maps', ''], ['Practice', '/practice', 'Practice', ''], ['Journey', '/journey', 'Journey', ''], ['Learn', '/learn', 'Basis', 'Learn'], ['Agents', '/agents', 'Agents', ''],
+  ['Economy', '/economy', 'Macro', 'Economy'], ['Liquidity', '/liquidity', 'Tide', 'Liquidity & M2'], ['Portfolios', '/portfolios', 'Portfolios', ''], ['Credit', '/credit', 'Spread', 'Credit & profits'], ['World & Policy', '/world', 'Geo', 'World & policy'], ['History', '/history', 'Epoch', 'Money history'], ['Maps', '/maps', 'Maps', ''], ['Practice', '/practice', 'Practice', ''], ['Journey', '/journey', 'Journey', ''], ['Learn', '/learn', 'Basis', 'Learn'], ['Agents', '/agents', 'Agents', ''],
 ] as const;
 
 export async function Header({ active, market }: { active: string; market?: 'US' | 'IN' | 'GLOBAL' }) {
