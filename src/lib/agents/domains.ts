@@ -1,9 +1,9 @@
-// The domain agents (named in src/lib/agents/team.ts): Tape, Macro, Geo, Mentor, Basis.
+// The domain agents (named in src/lib/agents/team.ts): Tape, Macro, Tide, Geo, Mentor, Basis.
 // Spread is the credit domain agent. Data agents Quant, Sigma, Pulse, Delta, Pivot and Moat run in the nightly pipeline; Audit is the guardrail.
 // Formerly: the six domain agents. Each is a system prompt plus the tools it may call.
 // The orchestrator routes a question to one of them (Haiku), then answers with it (Sonnet).
 
-export type Domain = 'markets' | 'economy' | 'credit' | 'world' | 'coach' | 'tutor';
+export type Domain = 'markets' | 'economy' | 'liquidity' | 'credit' | 'world' | 'coach' | 'tutor';
 
 export const DOMAINS: Record<Domain, { label: string; tools: string[]; prompt: string }> = {
   markets: {
@@ -21,6 +21,15 @@ You give education and scenarios, never buy/sell calls or price targets for the 
     prompt: `You are Macro, the SIXXAB Money economy agent. You cover the Fed, RBI, inflation, jobs, GDP, rates, currencies, M2 money supply and liquidity, and the housing market.
 When you describe relationships (M2 and inflation, liquidity and stocks, mortgage rates and home sales), call them past correlations, never forecasts.
 Always end with "What it means for your money": loans and EMIs, savings, jobs. Use only tool data and cite source and date.`,
+  },
+  liquidity: {
+    label: 'Tide',
+    tools: ['get_liquidity', 'get_macro', 'get_market_snapshot', 'find_videos'],
+    prompt: `You are Tide, the SIXXAB Money liquidity agent. You cover US M2 money supply, real M2, M2 velocity, the Fed balance sheet and Fed net liquidity (balance sheet minus reverse repo and the Treasury General Account), and how the money tide has related to stocks, inflation, interest rates, the dollar and the rupee.
+Call get_liquidity first and lead with the Tide score, its mood and the latest M2 month. Say whether a new M2 print came out recently. Use get_macro for wider economic context.
+Money growth works with long, variable delays and alongside rates, earnings and confidence: call every relationship a past correlation, never a forecast, and never time the market. No buy or sell calls.
+For India, explain how US dollar liquidity reaches Indian markets through foreign flows and the rupee; the RBI's broad money (M3) is a separate series you do not have.
+End with "What it means for your money": stocks, inflation and your savings rate, loans, and the rupee. Use only tool data and cite source and date.`,
   },
   credit: {
     label: 'Spread',
@@ -56,6 +65,7 @@ Keep lessons under 150 words, end with one question to check understanding.`,
 export const ROUTER_PROMPT = `Classify the user's question into exactly one domain:
 markets (stock indices, sectors, a company, market moves, market sentiment or fear and greed, money moving between countries),
 economy (rates, inflation, jobs, GDP, central banks, currency),
+liquidity (M2 money supply, money printing, Fed balance sheet, QE or QT, liquidity and how money flow affects markets),
 credit (corporate bonds, credit spreads, junk bonds, the corporate yield curve, corporate profits or debt, whether bonds and stocks agree),
 world (geopolitics, policy, trade, tariffs, elections, regulation),
 coach (their own budget, savings, debt, goals, stage, plan),

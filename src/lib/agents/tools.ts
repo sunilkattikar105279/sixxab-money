@@ -2,6 +2,7 @@ import type Anthropic from '@anthropic-ai/sdk';
 import { getIndicator, INDICATORS } from '../data/fred';
 import { getSnapshot } from '../data/market';
 import { macroSnapshot, macroBrief } from '../data/macro';
+import { getTide, tideBrief } from '../data/liquidity';
 import { adminClient } from '../supabase/admin';
 import { searchVideos } from '../media';
 import { levelsAllowed } from '../compliance';
@@ -48,6 +49,11 @@ const ALL: Record<string, Anthropic.Tool> = {
   get_macro: {
     name: 'get_macro',
     description: 'US money supply (M2, real M2, velocity, Fed balance sheet, net liquidity), housing (mortgage rate, payment on a median home, prices, sales, starts, supply), the economy dashboard (inflation, jobs, claims, retail sales, sentiment, yield curve, credit spreads), recession watch and the M2, inflation and stocks relationships. From FRED.',
+    input_schema: { type: 'object', properties: {} },
+  },
+  get_liquidity: {
+    name: 'get_liquidity',
+    description: "Tide's reading of US liquidity: latest M2 money supply (level, % on a year ago and on the month, release date, whether a new print came out in the last 10 days), real M2, Fed net liquidity and its 3-month change, the 0-100 Tide score and mood, the M2 regime, past correlations with CPI and the S&P 500, and impact notes for stocks, inflation, loans, cash and the rupee.",
     input_schema: { type: 'object', properties: {} },
   },
   get_latest_brief: {
@@ -99,6 +105,10 @@ export async function runTool(name: string, input: Record<string, unknown>, opts
     case 'get_macro': {
       const snap = await macroSnapshot();
       return { data: snap.available ? macroBrief(snap) : { error: 'FRED key not configured' }, sources: snap.available ? [{ name: 'FRED (Federal Reserve Bank of St. Louis)' }] : [] };
+    }
+    case 'get_liquidity': {
+      const t = await getTide();
+      return { data: t.available ? tideBrief(t) : { error: 'FRED key not configured' }, sources: t.available ? [{ name: 'FRED M2SL (Federal Reserve Bank of St. Louis)', asOf: t.asOf ?? undefined }] : [] };
     }
     case 'get_stock_analysis': {
       const db = adminClient(); if (!db) return { data: { error: 'database not configured' }, sources: [] };

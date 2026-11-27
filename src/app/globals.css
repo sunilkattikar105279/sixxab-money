@@ -219,3 +219,13 @@ input[type='range'] { accent-color: var(--teal); min-height: 28px; padding: 0; b
 .money-forms { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
 .money-forms li { border-left: 3px solid var(--gold); padding: 4px 10px; }
 .roadmap { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-top: 14px; }
+
+/* Tide · Liquidity & M2 */
+.tide-card { display: flex; flex-direction: column; gap: 10px; }
+.tide-notice { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; background: rgba(46, 229, 157, .10); border: 1px solid rgba(46, 229, 157, .45); color: var(--text); border-radius: 999px; padding: 5px 12px; font-size: 13px; }
+.tide-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--teal); box-shadow: 0 0 0 0 rgba(46, 229, 157, .7); animation: tide-ping 1.8s infinite; }
+@keyframes tide-ping { 0% { box-shadow: 0 0 0 0 rgba(46, 229, 157, .6); } 70% { box-shadow: 0 0 0 8px rgba(46, 229, 157, 0); } 100% { box-shadow: 0 0 0 0 rgba(46, 229, 157, 0); } }
+@media (prefers-reduced-motion: reduce) { .tide-dot { animation: none; } }
+.tide-impacts { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 14px; }
+.tide-parts { display: grid; gap: 8px; }
+.tide-parts div { display: grid; grid-template-columns: minmax(160px, 1fr) 2fr 36px; gap: 10px; align-items: center; font-size: 13px; }

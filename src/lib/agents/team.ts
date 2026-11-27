@@ -1,7 +1,7 @@
 // The SIXXAB Money agent team: one orchestrator routes each request to specialist agents named in financial terms.
 // Display names live here so pages, the coach and the daily brief all use the same words.
 
-export type AgentKey = 'quant' | 'sigma' | 'pulse' | 'spread' | 'epoch' | 'delta' | 'pivot' | 'moat' | 'tape' | 'macro' | 'geo' | 'mentor' | 'basis' | 'audit';
+export type AgentKey = 'quant' | 'sigma' | 'pulse' | 'spread' | 'epoch' | 'delta' | 'pivot' | 'moat' | 'tape' | 'macro' | 'geo' | 'mentor' | 'basis' | 'audit' | 'tide';
 
 export interface Agent { key: AgentKey; name: string; role: string; term: string; does: string; href: string | null }
 
@@ -19,6 +19,7 @@ export const TEAM: Agent[] = [
   { key: 'macro', name: 'Macro', role: 'Economy', term: 'The big-picture economy', does: 'Covers the Fed, RBI, inflation, jobs, GDP, rates and currencies, and what they mean for your money.', href: '/economy' },
   { key: 'geo', name: 'Geo', role: 'World and policy', term: 'Geopolitical risk', does: 'Trade, tariffs, sanctions, elections and regulation: the facts, each side’s case, and what it means for your money.', href: '/world' },
   { key: 'epoch', name: 'Epoch', role: 'Money history', term: 'An era: a period that shapes everything after it', does: 'Tracks 500 years of empires, money and cycles: how wealth is created, why leaders rise and fall, the mistakes that repeat, and what the data says about the next 200 years and your family’s legacy.', href: '/history' },
+  { key: 'tide', name: 'Tide', role: 'Liquidity & M2', term: 'A rising tide lifts all boats: the flow of money through the economy', does: 'Tracks US M2 money supply, real M2 and Fed net liquidity in one Tide score, flags each new M2 release, and explains what the money tide means for stocks, inflation, loans, your cash and India.', href: '/liquidity' },
   { key: 'mentor', name: 'Mentor', role: 'Money coach', term: 'Your guide through the six stages', does: 'Guides you through the SIXXAB stages with a 90-day plan and monthly check-ins.', href: '/ask' },
   { key: 'basis', name: 'Basis', role: 'Learning', term: 'The foundation (and cost basis, basis points)', does: 'Teaches money basics at your age and stage, with a 12-week track per stage.', href: '/learn' },
   { key: 'audit', name: 'Audit', role: 'Guardrails', term: 'Independent checking', does: 'Checks every answer before you see it: sources cited, both sides on politics, no buy or sell calls.', href: null },

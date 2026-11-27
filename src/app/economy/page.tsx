@@ -75,6 +75,7 @@ export default async function Economy({ searchParams }: { searchParams: Promise<
           </section>
 
           <h2 id="money">Money supply and liquidity (M2)</h2>
+          <p className="muted" style={{ margin: 0 }}>Tide, our liquidity agent, tracks M2 in depth with a Tide score and new-release alerts. <Link href="/liquidity">Open the M2 tracker →</Link></p>
           <TileGrid tiles={macro.money} />
           {macro.relations.length > 0 && <section className="card" aria-label="How money supply relates to inflation and stocks">
             <h2 style={{ marginBottom: 4 }}>How M2 relates to inflation and stocks</h2>
