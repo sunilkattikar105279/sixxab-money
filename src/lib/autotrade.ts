@@ -13,6 +13,9 @@ export interface Rules {
   dailyLossPct: number;     // pause new orders for a day after this drop
   allowShort: boolean;
   withTrendOnly: boolean;
+  // Optional trailing stop: once price is startR × the initial risk in profit, the stop follows the best close at distR × risk.
+  // keepTarget false lets winners run past the fixed target.
+  trail?: { startR: number; distR: number; keepTarget: boolean };
 }
 
 export interface Account { cash: number; equity: number; startingCash: number; pausedUntil: string | null; history: { d: string; equity: number }[] }
@@ -26,6 +29,8 @@ export interface Trade {
   entry: number; stop: number; target: number;
   fillPrice?: number | null; exitPrice?: number | null; exitReason?: string | null; pnl?: number | null;
   setupScore: number; reasons: string[];
+  risk?: number;  // entry minus the initial stop, per share (set when the order is created)
+  best?: number;  // best close since the fill (for the trailing stop)
   createdOn: string; openedOn?: string | null; closedOn?: string | null;
 }
 
@@ -51,12 +56,22 @@ export function step(input: { rules: Rules; account: Account; trades: Trade[]; s
   // 1. Exits for open positions: stop first (conservative), then target.
   for (const t of trades.filter((x) => x.status === 'open')) {
     const p = prices[t.symbol]; if (p == null) continue;
+    if (rules.trail && t.risk && t.fillPrice != null) {
+      const long = t.side === 'long';
+      t.best = t.best == null ? p : long ? Math.max(t.best, p) : Math.min(t.best, p);
+      const gain = long ? t.best - t.fillPrice : t.fillPrice - t.best;
+      if (gain >= rules.trail.startR * t.risk) {
+        const ns = r2(long ? t.best - rules.trail.distR * t.risk : t.best + rules.trail.distR * t.risk);
+        if (long ? ns > t.stop : ns < t.stop) { t.stop = ns; changed.add(t); }
+      }
+    }
+    const useTarget = !rules.trail || rules.trail.keepTarget;
     const hitStop = t.side === 'long' ? p <= t.stop : p >= t.stop;
-    const hitTarget = t.side === 'long' ? p >= t.target : p <= t.target;
+    const hitTarget = useTarget && (t.side === 'long' ? p >= t.target : p <= t.target);
     if (!hitStop && !hitTarget) continue;
     // Stops exit at the close (it may have gapped past the stop); targets exit at the target level.
     const exit = hitStop ? p : t.target;
-    t.exitPrice = r2(exit); t.exitReason = hitStop ? 'stop' : 'target'; t.pnl = r2(pnlOf(t, exit));
+    t.exitPrice = r2(exit); t.exitReason = hitStop ? (t.fillPrice != null && (t.side === 'long' ? t.stop > t.fillPrice : t.stop < t.fillPrice) ? 'trailing stop' : 'stop') : 'target'; t.pnl = r2(pnlOf(t, exit));
     t.status = 'closed'; t.closedOn = today;
     acc.cash += t.qty * (t.fillPrice ?? t.entry) + t.pnl;
     changed.add(t); log.push(`${t.symbol}: closed at ${t.exitReason} ${t.exitPrice} (${t.pnl >= 0 ? '+' : ''}${t.pnl})`);
@@ -103,7 +118,7 @@ export function step(input: { rules: Rules; account: Account; trades: Trade[]; s
       const byCash = acc.cash / s.entry;
       const qty = Math.floor(Math.min(byRisk, bySize, byCash));
       if (qty < 1) { log.push(`${s.symbol}: skipped, position too small for the account`); continue; }
-      const t: Trade = { symbol: s.symbol, side: s.side as 'long' | 'short', status: 'pending', qty, entry: s.entry, stop: s.stop, target: s.target, setupScore: s.score, reasons: s.reasons.slice(0, 4), createdOn: today };
+      const t: Trade = { symbol: s.symbol, side: s.side as 'long' | 'short', status: 'pending', qty, entry: s.entry, stop: s.stop, target: s.target, setupScore: s.score, reasons: s.reasons.slice(0, 4), createdOn: today, risk: riskPerShare };
       acc.cash -= qty * s.entry; // reserve cash for the order
       const p = prices[s.symbol];
       if (p != null && (t.side === 'long' ? p <= t.entry * (1 + FILL_TOLERANCE) && p > t.stop : p >= t.entry * (1 - FILL_TOLERANCE) && p < t.stop)) fill(t, p, acc, today, null, log);
