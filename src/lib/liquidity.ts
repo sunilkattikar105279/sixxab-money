@@ -97,7 +97,7 @@ export function impacts(x: ImpactInputs): Impact[] {
   }
   if (x.inrYoy !== null) {
     out.push(x.inrYoy > 2
-      ? { area: 'India and the rupee', tone: 'bad', read: `The rupee is ${pct(x.inrYoy)} weaker against the dollar than a year ago. Tight dollar liquidity has tended to pull foreign money out of India; a weaker rupee makes fuel, imports and US tuition dearer.` }
+      ? { area: 'India and the rupee', tone: 'bad', read: `The rupee is ${x.inrYoy.toFixed(1)}% weaker against the dollar than a year ago. A stronger dollar has tended to go with foreign money leaving India, and a weaker rupee makes fuel, imports and US tuition dearer.` }
       : x.inrYoy < -2
         ? { area: 'India and the rupee', tone: 'good', read: `The rupee is ${Math.abs(x.inrYoy).toFixed(1)}% stronger against the dollar than a year ago, easing import, fuel and overseas-study costs.` }
         : { area: 'India and the rupee', tone: 'neutral', read: `The rupee is roughly steady against the dollar over a year (${pct(x.inrYoy)}).` });
