@@ -35,7 +35,8 @@ export async function runStrategies(db: SupabaseClient, market: string, setups: 
     for (const t of res.created) {
       // Owner-only: mirror new orders to the connected Alpaca account as bracket orders (entry, take-profit, stop-loss).
       let brokerOrderId: string | null = null;
-      if (s.broker === 'alpaca' && market === 'US' && liveTradingEnabled()) {
+      // Replaced by scripts/live-trade.ts (guardrails, reconciliation, Kite). Kept only behind an explicit legacy flag.
+      if (s.broker === 'alpaca' && market === 'US' && liveTradingEnabled() && process.env.SIXXAB_LEGACY_MIRROR === 'true') {
         brokerOrderId = await submitBracket({ symbol: t.symbol, qty: t.qty, side: t.side, entry: t.entry, stop: t.stop, target: t.target }).catch((e) => { res.log.push(`${t.symbol}: broker order failed (${e instanceof Error ? e.message : 'error'})`); return null; });
       }
       await db.from('paper_trades').insert({ strategy_id: s.id, member_id: s.member_id, market, symbol: t.symbol, side: t.side, status: t.status, qty: t.qty, entry: t.entry, stop: t.stop, target: t.target, fill_price: t.fillPrice ?? null, setup_score: t.setupScore, reasons: t.reasons, opened_on: t.openedOn ?? null, created_on: t.createdOn, broker_order_id: brokerOrderId });

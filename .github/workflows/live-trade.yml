@@ -1,0 +1,45 @@
+name: Owner live trading
+# Swing orders on the owner's own accounts, inside the guardrails in src/lib/risk.ts.
+# Does nothing unless the SIXXAB_LIVE_TRADING secret is 'true'. US: Alpaca (paper unless ALPACA_TRADING_URL is the live URL).
+# India here runs PAPER only: SEBI requires real API orders to come from a static IP registered with Zerodha,
+# and GitHub runners have no fixed IP. Run `npx tsx scripts/live-trade.ts IN` with KITE_LIVE=true on that machine instead.
+on:
+  schedule:
+    - cron: '7 0 * * 2-6'     # US: after the nightly ingest (about 7 PM ET), places next-day GTC brackets
+    - cron: '52 14 * * 1-5'   # US: 9:52 AM ET status sync (fills, exits, reconcile)
+    - cron: '33 13 * * 1-5'   # India paper: after the India ingest (7:03 PM IST)
+  workflow_dispatch:
+    inputs:
+      market: { description: 'US or IN', required: true, default: 'US' }
+concurrency: { group: live-trade, cancel-in-progress: false }
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || secrets.SUPABASE_URL || vars.NEXT_PUBLIC_SUPABASE_URL || vars.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.SUPABASE_SERVICE_KEY || secrets.SUPABASE_SECRET_KEY }}
+      SIXXAB_LIVE_TRADING: ${{ secrets.SIXXAB_LIVE_TRADING }}
+      SIXXAB_KILL_SWITCH: ${{ secrets.SIXXAB_KILL_SWITCH }}
+      ALPACA_KEY_ID: ${{ secrets.ALPACA_KEY_ID }}
+      ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+      ALPACA_TRADING_KEY_ID: ${{ secrets.ALPACA_TRADING_KEY_ID }}
+      ALPACA_TRADING_SECRET_KEY: ${{ secrets.ALPACA_TRADING_SECRET_KEY }}
+      ALPACA_TRADING_URL: ${{ secrets.ALPACA_TRADING_URL }}
+      KITE_API_KEY: ${{ secrets.KITE_API_KEY }}
+      KITE_API_SECRET: ${{ secrets.KITE_API_SECRET }}
+      KITE_LIVE: 'false'
+      UPSTOX_ACCESS_TOKEN: ${{ secrets.UPSTOX_ACCESS_TOKEN }}
+      LIVE_CAPITAL_CAP: ${{ vars.LIVE_CAPITAL_CAP }}
+      LIVE_RISK_PCT: ${{ vars.LIVE_RISK_PCT }}
+      LIVE_MIN_SCORE: ${{ vars.LIVE_MIN_SCORE }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm install --no-audit --no-fund
+      - name: Run
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then M="${{ github.event.inputs.market }}";
+          else case "${{ github.event.schedule }}" in "33 13 * * 1-5") M="IN";; *) M="US";; esac; fi
+          npx tsx scripts/live-trade.ts "$M"
