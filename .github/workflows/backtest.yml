@@ -1,0 +1,23 @@
+name: Backtest swing engine
+on:
+  workflow_dispatch:
+    inputs:
+      market: { description: 'US or IN', required: true, default: 'US' }
+      years: { description: 'Years to test', required: true, default: '5' }
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      ALPACA_KEY_ID: ${{ secrets.ALPACA_KEY_ID }}
+      ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+      UPSTOX_ACCESS_TOKEN: ${{ secrets.UPSTOX_ACCESS_TOKEN }}
+      TWELVEDATA_API_KEY: ${{ secrets.TWELVEDATA_API_KEY || secrets.TWELVE_DATA_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm install --no-audit --no-fund
+      - run: npx tsx scripts/backtest.ts "${{ github.event.inputs.market }}" "${{ github.event.inputs.years }}"
+      - uses: actions/upload-artifact@v4
+        with: { name: 'backtest-${{ github.event.inputs.market }}', path: 'backtest-*.json' }
