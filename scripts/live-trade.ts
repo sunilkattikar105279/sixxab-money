@@ -4,7 +4,7 @@
 // Off unless SIXXAB_LIVE_TRADING=true. US uses Alpaca (paper unless ALPACA_TRADING_URL is the live URL).
 // India uses Zerodha Kite; until KITE_LIVE=true it runs as paper (orders simulated on daily closes, account read-only).
 // India real orders must come from a static IP registered with Zerodha (SEBI), so run IN live only on that machine.
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { alpacaBroker, alpacaConfigured } from '../src/lib/brokers/alpaca';
 import { kiteBroker, kiteConfigured } from '../src/lib/brokers/kite';
 import type { Broker } from '../src/lib/brokers/types';
@@ -148,7 +148,7 @@ async function main() {
   await logRun(db, broker.name, broker.paper, equity, cash, placed, brokerErrors, mismatches.length, plan.blocked, log, marks);
 }
 
-async function logRun(db: ReturnType<typeof createClient>, name: string, paper: boolean, equity: number | null, cash: number | null, placed: number, errors: number, mismatches: number, blocked: unknown[], log: string[], marks?: { peak: number; dayStart: number }) {
+async function logRun(db: SupabaseClient, name: string, paper: boolean, equity: number | null, cash: number | null, placed: number, errors: number, mismatches: number, blocked: unknown[], log: string[], marks?: { peak: number; dayStart: number }) {
   const { error } = await db.from('live_runs').insert({ broker: name, market, paper, run_on: today, equity, cash, peak_equity: marks?.peak ?? null, day_start_equity: marks?.dayStart ?? null, orders_placed: placed, broker_errors: errors, reconcile_mismatches: mismatches, blocked, log: log.slice(-100) });
   if (error) console.warn(`run not logged: ${error.message}`);
 }
